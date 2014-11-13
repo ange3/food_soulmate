@@ -24,22 +24,39 @@ def createMap(user_data):
   userListMap = {}
   for index, user in enumerate(user_data):
     userID = user['user_id']
-    userListMap[userID] = index
+    # print userID
+    # userID = userID[2:] # strip beginning u' and ending ' that JSON file adds
+    userListMap[userID] = {}
+    # print userListMap
+    userListMap[userID]['node_id'] = index
   return userListMap
 
 
 # MAIN FUNCTION
 # creates a map that is a user list
 def main():
-  userMapFile = "user_list_map_full.p"
+  # 1) Create map of users
+  userMapFile = "user_list_map.p"
+  modify = True
   # if dictionary does not already exist, load the data
-  if not os.path.isfile(userMapFile):
-    user_data = loadJSON('../comma_separated_dataset/yelp_academic_dataset_user_comma.json')
+  if not os.path.isfile(userMapFile) or modify:
+    user_data = loadJSON('small_data/users_sample_small.json')
+    # user_data = loadJSON('../comma_separated_dataset/yelp_academic_dataset_user_comma.json')
     userListMap = createMap(user_data)
-    pickle.dump( userListMap, open( "user_list_map_full.p", "wb" ) )  # save user list map to a file
+    pickle.dump( userListMap, open( "user_list_map.p", "wb" ) )  # save user list map to a file
   else:
+    print 'already loaded!'
     userListMap = pickle.load( open( userMapFile, "rb" ) )
-  print len(userListMap)
+  print userListMap
+  print userListMap['g1hPSh0rTKcBpICKMOpt-g']
+  # 2) Create 3 maps for each user
+  # Load review data and append each reviewID into each of the user's 3 maps
+  # business_data = loadJSON('../comma_separated_dataset/yelp_academic_dataset_business_comma.json')
+  # review_data = loadJSON('../comma_separated_dataset/yelp_academic_dataset_review_comma.json')
+  # for review in review_data:
+    # userID = review['user_id']
+
+
   
 # RUN
 main()  
