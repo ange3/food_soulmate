@@ -30,11 +30,27 @@ def write_edges_file(user_data, user_map, edgesFile):
   # print "nodeID: ",user_map['7Erd8wom0MYbetSjxvoufQ']
   file.close()
 
+# print out more stats on community network
+# NOT WORKING YET - angela
+def networkInfo(g):
+  UGraph = g
+  Nodes = snap.TIntV()
+  for nodeId in range(10):
+      Nodes.Add(nodeId)
+  print snap.GetModularity(UGraph, Nodes, 1000)
+  # CmtyV = snap.TCnComV()
+  # modularity = snap.CommunityCNM(UGraph, CmtyV)
+  # for Cmty in CmtyV:
+  #     print "Community: "
+  #     for NI in Cmty:
+  #         print NI
+  # print "The modularity of the network is %f" % modularity
+
 def main(): 
   edgesFile = 'evaluation_network_edgelist.txt'
   userMapFile = 'user_list_map_full.p'
   user_data = []
-  user_data = load_data('./comma_separated_dataset/yelp_academic_dataset_user_comma.json', user_data)
+  user_data = load_data('../comma_separated_dataset/yelp_academic_dataset_user_comma.json', user_data)
   print "friends of a single record: ",user_data[50]['friends']
 
   user_map = pickle.load(open(userMapFile,"rb"))
@@ -44,6 +60,7 @@ def main():
 
   g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
   snap.PrintInfo(g, "Evaluation Network Info", "evaluation_network_info.txt", False)
+  # networkInfo(g)
   # snap.SaveEdgeList(g, "evaluation_network.txt")
 
 if __name__ == '__main__':

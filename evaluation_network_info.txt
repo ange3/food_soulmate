@@ -1,5 +1,3 @@
-
-
 Evaluation Network Info:
   Nodes:                    30255
   Edges:                    151516
