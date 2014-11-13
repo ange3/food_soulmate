@@ -1,30 +1,27 @@
 import json
 from pprint import pprint
+import pickle
 
 def load_data(file, data):
     infile = open(file, 'r')
     data = json.load(infile)
-    pprint(data[0])
+    # pprint(data[0])
     infile.close()
     return data
     # http://stackoverflow.com/questions/11279331/what-does-the-u-symbol-mean-in-front-of-string-values
     
 user_data = []
-user_data = load_data('yelp_academic_dataset_user_comma_friends_only.json', user_data)
-#print user_data[5]
+user_data = load_data('reviews_sample_small.json', user_data)
 
+# to access data: index into user element and then use key
+# print user_data[0]['user_id']
 
+# userListMap is a table that allows us to easily index into the user_data (nodeID is the index)
+  # userID -> nodeID
+userListMap = {}
+for index, user in enumerate(user_data):
+  userID = user['user_id']
+  userListMap[userID] = index
 
-#user_infile = open('yelp_academic_dataset_user_comma.json', 'r')
-#
-#user_data = json.load(user_infile)
-#
-#while True:
-#    currline = user_infile.readline()
-#    if not currline: #eof reached
-#        break
-#    print currline    
-#    user_data.append(json.loads(currline))
-#    
-#pprint(user_data)
-#user_infile.close()
+# print len(userListMap)
+
