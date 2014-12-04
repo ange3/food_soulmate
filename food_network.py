@@ -1,6 +1,6 @@
 import pickle
 
-
+# 
 def createMetaData(restaurantMap):
 
 def main():
