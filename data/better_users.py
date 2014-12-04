@@ -12,6 +12,7 @@ def loadJSON():
   user_data = []
   infile = open(FILE, 'r')
   user_data = json.load(infile)
+  print user_data[1]
   infile.close()
   return user_data  
 
@@ -24,26 +25,26 @@ def goodUser(user):
     return False
   return True
 
-def replaceApostrophes(line):
-  inQuotes = False
-  toReturn = ""
-  for charIndex in xrange(len(line)):
-    if inQuotes:
-      #Only looking for an end quote
-      if line[charIndex] == '\"':
-        if line[charIndex-1] == '\\':
-          inQuotes = False
-      toReturn += line[charIndex]
-    if not inQuotes:
-      if line[charIndex] == '\'':
-        if line[charIndex-1] == 'u':
-          toReturn -= toReturn[:len(toReturn)-1]
-        line[charIndex] = '\"'
-      if line[charIndex] == '\"':
-        inQuotes = true
-      toReturn += line[charIndex]
+# def replaceApostrophes(line):
+#   inQuotes = False
+#   toReturn = ""
+#   for charIndex in xrange(len(line)):
+#     if inQuotes:
+#       #Only looking for an end quote
+#       if line[charIndex] == '\"':
+#         if line[charIndex-1] == '\\':
+#           inQuotes = False
+#       toReturn += line[charIndex]
+#     if not inQuotes:
+#       if line[charIndex] == '\'':
+#         if line[charIndex-1] == 'u':
+#           toReturn -= toReturn[:len(toReturn)-1]
+#         line[charIndex] = '\"'
+#       if line[charIndex] == '\"':
+#         inQuotes = true
+#       toReturn += line[charIndex]
 
-  return line
+#   return line
 
 
 # Creates a userListMap which maps from userID -> nodeID
@@ -63,20 +64,23 @@ def createMap(user_data, numNodes):
 
   newUserDataFile = "../../yelp/user_1000.json"
 
-  file = open(newUserDataFile, "w")
-  file.write("[")
-  for i in xrange(len(good_data) - 1): # remember that the last line has special formatting (no comma after last record)
-    line = "{0},\n".format(good_data[i])
-    line = replaceApostrophes(line)
-    #line = line.replace("u'", "'");
-    #line = line.replace("'", "\"");
-    file.write(line)
-  lastLine = str(good_data[len(good_data) - 1])  + "]"
-  lastLine = replaceApostrophes(lastLine)
-  #lastLine = lastLine.replace("u'", "'");
-  #lastLine = lastLine.replace("'", "\"");
-  file.write(lastLine)
-  file.close()
+  with open(newUserDataFile, 'w') as outfile:
+    json.dump(good_data, outfile, sort_keys=True, indent=4)
+
+  # file = open(newUserDataFile, "w")
+  # file.write("[")
+  # for i in xrange(len(good_data) - 1): # remember that the last line has special formatting (no comma after last record)
+  #   line = "{0},\n".format(good_data[i])
+  #   #line = replaceApostrophes(line)
+  #   #line = line.replace("u'", "'");
+  #   #line = line.replace("'", "\"");
+  #   file.write(line)
+  # lastLine = str(good_data[len(good_data) - 1])  + "]"
+  # #lastLine = replaceApostrophes(lastLine)
+  # #lastLine = lastLine.replace("u'", "'");
+  # #lastLine = lastLine.replace("'", "\"");
+  # file.write(lastLine)
+  # file.close()
   
   return userListMap
 
