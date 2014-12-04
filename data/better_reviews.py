@@ -8,32 +8,36 @@ def loadJSON(fileName):
   infile.close()
   return user_data  
 
+# returns a map of IDs of all food businesses
+def getFoodBusinessIDs(business_data):
+  print 'orig num businesses', len(business_data)
+  businessMap = {}
+  for business in business_data:
+    if 'Restaurants' in business['categories']:
+      businessMap[business['business_id']] = 1
+  print 'new num businesses', len(businessMap)
+  return businessMap
+
 def main():
   review_data = loadJSON('../../yelp/review.json')
   business_data = loadJSON('../../yelp/business.json')
+  businessMap = getFoodBusinessIDs(business_data)
   print 'original num reviews', len(review_data)
-  userMapFile = "user_list_map_100.p"
+  userMapFile = "user_list_map_10000.p"
   userListMap = pickle.load( open( userMapFile, "rb" ) )
-  print userListMap
+  # print userListMap
   good_data = []
   for index, review in enumerate(review_data):
-    # business = business
-    if review['user_id'] in userListMap:  #checks if user id in any of the keys of map of users
-      print review
+    if review['user_id'] in userListMap and review['business_id'] in businessMap:  #checks if user id in any of the keys of map of users and business is food
+      # print review
       good_data.append(review)
-  file = open('review_by_100_users.json', "w")
-  file.write("[")
-  for i in xrange(len(good_data) - 1): # remember that the last line has special formatting (no comma after last record)
-    line = "{0},\n".format(good_data[i])
-    line = line.replace("u'", "'");
-    line = line.replace("'", "\"");
-    file.write(line)
-  lastLine = str(good_data[len(good_data) - 1])  + "]"
-  lastLine = lastLine.replace("u'", "'");
-  lastLine = lastLine.replace("'", "\"");
-  file.write(lastLine)
-  file.close()
-  updated_review_data = loadJSON('review_by_100_users.json')
-  print 'new num reviews', len(updated_review_data)
+  newUserDataFile = "../../yelp/reviews_by_10000_users.json"
+
+  with open(newUserDataFile, 'w') as outfile:
+    json.dump(good_data, outfile, sort_keys=True, indent=4)
+  print 'created JSON file:', newUserDataFile
+
+  updated_review_data = loadJSON(newUserDataFile)
+  print 'valid json, new num reviews = ', len(updated_review_data)
 
 main()
