@@ -3,7 +3,6 @@ from pprint import pprint
 
 FILE = '../../yelp/user.json'
 # FILE = '../small_data/users_sample_small.json'
-# FILE = 'users_sample_small.json'
 
 # Loads JSON data
 # to access data: index into user element and then use key
@@ -32,7 +31,7 @@ def createMap(user_data, numNodes):
   for index, user in enumerate(user_data):
     userID = user['user_id']
     if goodUser(user):
-      # userID = userID[2:] # strip beginning u' and ending ' that JSON file adds
+      userID = str(userID) # strip beginning u' and ending ' that JSON file adds
       userListMap[userID] = {}
       userListMap[userID]['node_id'] = index
     if len(userListMap) >= numNodes:
@@ -41,9 +40,11 @@ def createMap(user_data, numNodes):
 
 def main():
   user_data = loadJSON()
-  userListMap = createMap(user_data, 100)
+  userListMap = createMap(user_data, 1)
   print 'num nodes', len(userListMap)
-  pickle.dump( userListMap, open( "user_list_map_100.p", "wb" ) )
+  print userListMap
+  # print userListMap.keys()
+  pickle.dump( userListMap, open( "user_list_map_1.p", "wb" ) )
 
 
 main()
