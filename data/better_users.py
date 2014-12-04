@@ -40,14 +40,18 @@ def createMap(user_data, numNodes):
     if len(userListMap) >= numNodes:
       break
 
-  newUserDataFile = "../../yelp/user_100.json"
+  newUserDataFile = "../../yelp/user_1000.json"
 
   file = open(newUserDataFile, "w")
   file.write("[")
   for i in xrange(len(good_data) - 1): # remember that the last line has special formatting (no comma after last record)
     line = "{0},\n".format(good_data[i])
-    line = line.replace("u'", "'");
-    line = line.replace("'", "\"");
+    inQuotes = False
+    for charIndex in xrange(len(line)):
+      if charIndex == '\'' and not inQuotes
+
+    #line = line.replace("u'", "'");
+    #line = line.replace("'", "\"");
     file.write(line)
   lastLine = str(good_data[len(good_data) - 1])  + "]"
   lastLine = lastLine.replace("u'", "'");
@@ -59,9 +63,9 @@ def createMap(user_data, numNodes):
 
 def main():
   user_data = loadJSON()
-  userListMap = createMap(user_data, 100)
+  userListMap = createMap(user_data, 1000)
   print 'num_nodes', len(userListMap)
-  pickle.dump( userListMap, open( "user_list_map_100.p", "wb" ) )
+  pickle.dump( userListMap, open( "user_list_map_1000.p", "wb" ) )
 
 
 main()
