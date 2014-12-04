@@ -34,7 +34,7 @@ def main():
   edgesFile = 'evaluation_network_edgelist.txt'
   userMapFile = 'data/user_list_map_100.p'
   user_data = []
-  user_data = load_data('../yelp/new_user.json', user_data)
+  user_data = load_data('../yelp/user_100.json', user_data)
   # print "friends of a single record: ",user_data[0]['friends']
 
   user_map = pickle.load(open(userMapFile,"rb"))
