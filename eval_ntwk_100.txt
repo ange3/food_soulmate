@@ -1,0 +1,6 @@
+# Undirected graph (each unordered pair of nodes is saved once): eval_ntwk_100.txt
+# Nodes: 6 Edges: 3
+# NodeId	NodeId
+34	122
+43	82
+118	176
