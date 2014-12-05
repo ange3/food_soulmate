@@ -7,6 +7,9 @@ FILE = '../../yelp/user_1000.json'
 def compScore(one, two):
 	return jaccard_similarity_score(one, two)
 
+def compScore2(one, two):
+	
+
 def loadJSON():
   user_data = []
   infile = open(FILE, 'r')
