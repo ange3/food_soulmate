@@ -31,7 +31,7 @@ def write_edges_file(user_data, user_map, edgesFile):
   file.close()
 
 def main(): 
-  edgesFile = 'eval_ntwk_edge_list_100.txt'
+  edgesFile = 'eval_ntwk/eval_ntwk_edge_list_100.txt'
   userMapFile = 'data/user_list_map_100.p'
   user_data = []
   user_data = load_data('../yelp/user_100.json', user_data)
@@ -47,9 +47,9 @@ def main():
   # step 2
   # g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
   # step 2
-  # snap.PrintInfo(g, "Evaluation Network Info", "eval_netwk_info_100.txt", False)
+  # snap.PrintInfo(g, "Evaluation Network Info", "eval_ntwk/eval_netwk_info_100.txt", False)
   # step 2
-  # snap.SaveEdgeList(g, "eval_ntwk_100.txt")
+  # snap.SaveEdgeList(g, "eval_ntwk/eval_ntwk_100.txt")
 
 if __name__ == '__main__':
   main()
