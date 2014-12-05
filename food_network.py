@@ -1,4 +1,4 @@
-import pickle, json, math
+import pickle, json, math, snap
 import util
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,7 +30,7 @@ def calculateJaccardSim(node1, node2):
   # print ratio
   return ratio
 
-# frequency distribution of each Jaccard Similarity value
+# plots the frequency distribution of each Jaccard Similarity value
 # buckets = [0.1, 0.2, ... 1]
 def plotBucketDistributionJaccard(jaccardVals):
   jaccardList = [jaccardVals[key] for key in jaccardVals if jaccardVals[key] != 0]
@@ -41,7 +41,7 @@ def plotBucketDistributionJaccard(jaccardVals):
   print jaccardListBuckets
   print 'number of edges with non-zero similarity', len(jaccardListBuckets)
   x = np.arange(0,1.01,0.01)
-  plt.title('Jaccard Non-Zero Similarity Distribution for 10,000 Yelp users')
+  plt.title('Jaccard Non-Zero Similarity Distribution for 1000 Yelp users')
   plt.xlabel('Jaccard Similarity')
   plt.ylabel('Count of edges')
   plt.scatter(x, jaccardListBuckets)
@@ -61,12 +61,24 @@ def plotDistributionJaccard(jaccardVals):
   plt.scatter(x, jaccardList)
   plt.show()
 
+# create edge list given list of jaccard values for each pair of nodes
+def createFoodNetwork(jaccardVals, user_map, edgesFile):
+  file = open(edgesFile, "w")
+  for pair in jaccardVals:
+    val = jaccardVals[pair]
+    if val > 0:   #create an edge if jaccard val > 0 
+      node1ID = user_map[pair[0]]['node_id']
+      node2ID = user_map[pair[1]]['node_id']
+      line = "{0} {1}\n".format(node1ID, node2ID)
+      file.write(line)
+  file.close()
+
 # add meta data to the userListMap 
 # --> restauMap
 def main():
-  userMapFile = "data/user_list_map_10000.p"
+  userMapFile = "data/user_list_map_1000.p"
   userListMap = pickle.load( open( userMapFile, "rb" ) )
-  review_data = util.loadJSON('../yelp/reviews_by_10000_users.json')
+  review_data = util.loadJSON('../yelp/reviews_by_1000_users.json')
   for userID in userListMap.keys():
     userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
   createMetaData(review_data, userListMap)
@@ -83,7 +95,12 @@ def main():
         jaccardVals[pair] = jaccardSimValue
   print 'number of edges calculated', len(jaccardVals)
 
-  plotBucketDistributionJaccard(jaccardVals)
+  # plotBucketDistributionJaccard(jaccardVals)
+  edgesFile = 'food_ntwk/food_ntwk_edge_list_1000.txt'
+  createFoodNetwork(jaccardVals, userListMap, edgesFile)
+  g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
+  print 'num Nodes', g.GetNodes()
+  print 'num Edges', g.GetEdges()
 
 
 
