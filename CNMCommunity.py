@@ -39,27 +39,31 @@ def main():
 	# evalGraph = snap.LoadEdgeList(snap.PUNGraph, evalFile, 0, 1)
 
 	# For testing
-	foodGraph = snap.GenRndGnm(snap.PUNGraph, 10, 25)
-	evalGraph = snap.GenRndGnm(snap.PUNGraph, 10, 25)
+	# foodGraph = snap.GenRndGnm(snap.PUNGraph, 10, 25)
+	# evalGraph = snap.GenRndGnm(snap.PUNGraph, 10, 25)
+  foodEdgesFile = 'food_ntwk/food_ntwk_edge_list_1000.txt'
+  foodGraph = snap.LoadEdgeList(snap.PUNGraph, foodEdgesFile, 0, 1)
 
-	foodCmtyV = snap.TCnComV()
-	evalCmtyV = snap.TCnComV()
+  evalEdgesFile = 'eval_ntwk/eval_ntwk_edge_list_1000.txt'
+  evalGraph = snap.LoadEdgeList(snap.PUNGraph, evalEdgesFile, 0, 1)
 
-	foodMod = snap.CommunityCNM(foodGraph, foodCmtyV)
-	evalMod = snap.CommunityCNM(evalGraph, evalCmtyV)
+  foodCmtyV = snap.TCnComV()
+  evalCmtyV = snap.TCnComV()
+
+  foodMod = snap.CommunityCNM(foodGraph, foodCmtyV)
+  evalMod = snap.CommunityCNM(evalGraph, evalCmtyV)
 
 	#Generate map of indices of each node within each community vector
-	nodeIndices = generateIndices(foodCmtyV, evalCmtyV)
+  nodeIndices = generateIndices(foodCmtyV, evalCmtyV)
+  numnodes = len(nodeIndices)
+  jaccardSum = 0
 
-	numnodes = len(nodeIndices)
-	jaccardSum = 0
-
-	for i in xrange(numnodes):
+  for i in xrange(numnodes):
 		#Keep running total of jaccard scores
-		jaccardSum += jaccard(foodCmtyV[nodeIndices[i][0]], evalCmtyV[nodeIndices[i][1]])
+    jaccardSum += jaccard(foodCmtyV[nodeIndices[i][0]], evalCmtyV[nodeIndices[i][1]])
 
-	jaccardAverage = float(jaccardSum)/numnodes
-	print "Accuracy: %f" % jaccardAverage
+  jaccardAverage = float(jaccardSum)/numnodes
+  print "Accuracy: %f" % jaccardAverage
 
 
 
