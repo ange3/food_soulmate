@@ -1,4 +1,4 @@
-import pickle, json
+import pickle, json, math
 import util
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,10 +30,29 @@ def calculateJaccardSim(node1, node2):
   # print ratio
   return ratio
 
+# frequency distribution of each Jaccard Similarity value
+# buckets = [0.1, 0.2, ... 1]
+def plotBucketDistributionJaccard(jaccardVals):
+  jaccardList = [jaccardVals[key] for key in jaccardVals if jaccardVals[key] != 0]
+  jaccardListBuckets = [0] * 101
+  for val in jaccardList:
+    index = math.ceil(val*100)
+    jaccardListBuckets[int(index)] += 1
+  print jaccardListBuckets
+  print 'number of edges with non-zero similarity', len(jaccardListBuckets)
+  x = np.arange(0,1.01,0.01)
+  plt.title('Jaccard Non-Zero Similarity Distribution for 10,000 Yelp users')
+  plt.xlabel('Jaccard Similarity')
+  plt.ylabel('Count of edges')
+  plt.scatter(x, jaccardListBuckets)
+  plt.plot(x, jaccardListBuckets)
+  # plt.axis([0,1,0, 30])
+  plt.show()
+
+# plot out all jaccard values
 def plotDistributionJaccard(jaccardVals):
   jaccardList = [jaccardVals[key] for key in jaccardVals if jaccardVals[key] != 0]
-  # jaccardList = np.sort(jaccardList)
-  # print jaccardList
+  print jaccardList
   print 'number of edges with non-zero similarity', len(jaccardList)
   x = np.arange(len(jaccardList))
   plt.title('Jaccard Non-Zero Similarity Distribution for 1000 Yelp users')
@@ -45,17 +64,13 @@ def plotDistributionJaccard(jaccardVals):
 # add meta data to the userListMap 
 # --> restauMap
 def main():
-  userMapFile = "data/user_list_map_1000.p"
+  userMapFile = "data/user_list_map_10000.p"
   userListMap = pickle.load( open( userMapFile, "rb" ) )
-  review_data = util.loadJSON('../yelp/reviews_by_1000_users.json')
+  review_data = util.loadJSON('../yelp/reviews_by_10000_users.json')
   for userID in userListMap.keys():
     userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
   createMetaData(review_data, userListMap)
-  # print 'sample user', userListMap['QZWo-viRnL9EmsIAN6vHtg']
   print 'number of users', len(userListMap)
-  # node1 = userListMap['3Z2c8dL_nRXc7dd5_sFsPw']
-  # node2 = userListMap['f01B5tRtqf3k6ak1pPSAWw']
-  # calculateJaccardSim(node1, node2)
   jaccardVals = {}  # {(node1ID, node2ID): jaccardSimValue}
   for node1ID in userListMap.keys():
     for node2ID in userListMap.keys():
@@ -68,9 +83,19 @@ def main():
         jaccardVals[pair] = jaccardSimValue
   print 'number of edges calculated', len(jaccardVals)
 
-  plotDistributionJaccard(jaccardVals)
+  plotBucketDistributionJaccard(jaccardVals)
 
-  
 
 
 main()
+
+
+'''
+sample test code in main
+
+  print 'sample user', userListMap['QZWo-viRnL9EmsIAN6vHtg']
+  node1 = userListMap['3Z2c8dL_nRXc7dd5_sFsPw']
+  node2 = userListMap['f01B5tRtqf3k6ak1pPSAWw']
+  calculateJaccardSim(node1, node2)
+
+'''
