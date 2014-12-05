@@ -9,7 +9,7 @@ import os
 def load_data(file, data):
     infile = open(file, 'r')
     data = json.load(infile)
-    pprint(data[0])
+    # pprint(data[0])
     infile.close()
     return data
     # http://stackoverflow.com/questions/11279331/what-does-the-u-symbol-mean-in-front-of-string-values
@@ -20,30 +20,36 @@ def write_edges_file(user_data, user_map, edgesFile):
 
   for i in xrange(len(user_data)):
     friend_list.append(user_data[i]['friends'])
-    # print friend_list[i]
     for j in xrange(len(friend_list[i])):
-      # print "user_data[",i,"]['user_id']: ",user_data[i]['user_id']
-      # print "friend_list[",i,"][",j,"]: ",friend_list[i][j]
-      line = "{0} {1}\n".format(user_map[user_data[i]['user_id']], user_map[friend_list[i][j]]) 
-      file.write(line)
-  # print len(user_data)
-  # print "nodeID: ",user_map['7Erd8wom0MYbetSjxvoufQ']
+      if friend_list[i][j] in user_map: # if user should be in the network
+        src_tmp = user_map[user_data[i]['user_id']] # not quite sure what data type this return value is, but it's converted to string 
+        dst_tmp = user_map[friend_list[i][j]]       # not quite sure what data type this return value is, but it's converted to string 
+        src = str(src_tmp)[12:-1] # extract node_id for src of edge
+        dst = str(dst_tmp)[12:-1] # extract node_id for dst of edge
+        line = "{0} {1}\n".format(src, dst) 
+        file.write(line)
   file.close()
 
 def main(): 
-  edgesFile = 'evaluation_network_edgelist.txt'
+  edgesFile = 'eval_ntwk_edge_list_100.txt'
   userMapFile = 'data/user_list_map_100.p'
   user_data = []
   user_data = load_data('../yelp/user_100.json', user_data)
-  # print "friends of a single record: ",user_data[0]['friends']
+
+  # step 1
+  g = snap.TUNGraph.New()
 
   user_map = pickle.load(open(userMapFile,"rb"))
 
-  # write_edges_file(user_data, user_map, edgesFile)
+  # step 1
+  write_edges_file(user_data, user_map, edgesFile)
 
-  g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
-  snap.PrintInfo(g, "Evaluation Network Info", "evaluation_network_info.txt", False)
-  # snap.SaveEdgeList(g, "evaluation_network.txt")
+  # step 2
+  # g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
+  # step 2
+  # snap.PrintInfo(g, "Evaluation Network Info", "eval_netwk_info_100.txt", False)
+  # step 2
+  # snap.SaveEdgeList(g, "eval_ntwk_100.txt")
 
 if __name__ == '__main__':
   main()
