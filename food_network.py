@@ -65,10 +65,13 @@ def plotDistributionJaccard(jaccardVals):
 def createFoodNetwork(jaccardVals, user_map, edgesFile):
   file = open(edgesFile, "w")
   for pair in jaccardVals:
-    val = jaccardVals[pair]
+    val = jaccardVals[pair] 
+    # DECIDE WHAT SCORE THRESHOLD TO USE WHEN CREATING AN EDGE
     if val > 0:   #create an edge if jaccard val > 0 
-      node1ID = user_map[pair[0]]['node_id']
-      node2ID = user_map[pair[1]]['node_id']
+      node1ID = pair[0]
+      node2ID = pair[1]
+      # node1ID = user_map[pair[0]]['node_id']
+      # node2ID = user_map[pair[1]]['node_id']
       line = "{0} {1}\n".format(node1ID, node2ID)
       file.write(line)
   file.close()
@@ -83,6 +86,7 @@ def main():
     userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
   createMetaData(review_data, userListMap)
   print 'number of users', len(userListMap)
+  # IMPLEMENT SCORE CALCULATION HERE: 
   jaccardVals = {}  # {(node1ID, node2ID): jaccardSimValue}
   for node1ID in userListMap.keys():
     for node2ID in userListMap.keys():
@@ -96,12 +100,11 @@ def main():
   print 'number of edges calculated', len(jaccardVals)
 
   # plotBucketDistributionJaccard(jaccardVals)
-  edgesFile = 'food_ntwk/food_ntwk_edge_list_1000.txt'
+  edgesFile = 'food_ntwk/food_ntwk_edge_list_1000_userIDs.txt'
   createFoodNetwork(jaccardVals, userListMap, edgesFile)
   g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
   print 'num Nodes', g.GetNodes()
   print 'num Edges', g.GetEdges()
-
 
 
 main()
