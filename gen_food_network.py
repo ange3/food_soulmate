@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 # iterate through all reviews and add the business to the restauMap IF it is a food establishment
 # restaurantMap: {businessID: [reviewID, reviewID ]}
+# reviewMap: {reviewID: rating}
 def createMetaData(review_data, userListMap):
   for review in review_data:
     userID = review['user_id']
@@ -15,6 +16,7 @@ def createMetaData(review_data, userListMap):
       if businessID not in userListMap[userID]['restaurantMap']:
         userListMap[userID]['restaurantMap'][businessID] = []
       userListMap[userID]['restaurantMap'][businessID].append(reviewID)
+      userListMap[userID]['reviewMap'][reviewID] = review['stars']
 
 # returns the ratio of size of overlapping restaurants set / union of all restaurants
 def calculateJaccardSim(node1, node2):
@@ -80,6 +82,52 @@ def calculateAttrVals(userListMap):
   attrVals = {}
   return attrVals
 
+# returns the similarity score between node1 and node2 based on the first part of our composite score formula (see Project Milestone)
+def calculateRatingSim(node1, node2):
+  score = 0
+  restaurantSet1 = set(node1['restaurantMap'].keys()) # all restaurants reviewed by user 1
+  restaurantSet2 = set(node2['restaurantMap'].keys()) # all restaurants reviewed by user 2
+
+  if len(restaurantSet1) == 0 or len(restaurantSet2) == 0: # if either user has not reviewed any restaurants
+    return 0
+
+  for restaurantA in restaurantSet1: # for each restaurant reviewed by node2
+    for restaurantB in restaurantSet2: # for each restaurant reviewed by node2
+      if restaurantA == restaurantB: # if the reviewed restaurant is the same
+        reviewSetA = node1['restaurantMap'][restaurantA] # node1's reviews of common restaurant
+        reviewSetB = node2['restaurantMap'][restaurantA] # node2's reviews of common restaurant
+        ratingSumA = 0.0
+        ratingSumB = 0.0
+        for reviewID in reviewSetA: # use the average star rating for that restaurant
+        # QUESTION: Should we go with most recent review only or first only? Most restaurants are only reviewed once i.e. len(reviewSetZ) = 1
+          # print node1['reviewMap'][reviewID]
+          ratingSumA += node1['reviewMap'][reviewID]
+        for reviewID in reviewSetB: 
+          ratingSumB += node2['reviewMap'][reviewID]
+
+        avgRatingA = ratingSumA/len(reviewSetA) # average rating by node1 of restaurantA
+        avgRatingB = ratingSumB/len(reviewSetB) # average rating by node2 of restaurantA
+
+        score += (2.0 - abs(avgRatingA - avgRatingB))* math.pow( (abs(avgRatingA-3) + abs(avgRatingB-3)) / 2.0, 2.0 )
+  
+  return score
+
+# calculate similarity of users based on how they rated restaurants
+def calculateRatingVals(userListMap):
+  ratingVals = {} # {(node1ID, node2ID): ratingSimValue}
+
+  for node1ID in userListMap.keys():
+    for node2ID in userListMap.keys():
+      if node1ID == node2ID: 
+        continue
+      pair = (node1ID, node2ID)
+      pair2 = (node2ID, node1ID)
+      if pair not in ratingVals and pair2 not in ratingVals:# undirected graph
+        ratingSimValue = calculateRatingSim(userListMap[node1ID], userListMap[node2ID])
+        ratingVals[pair] = ratingSimValue
+
+  return ratingVals
+
 # create edge list given list of jaccard values for each pair of nodes
 def createFoodNetwork(edgeVals, user_map, edgesFile):
   file = open(edgesFile, "w")
@@ -103,10 +151,12 @@ def main():
   review_data = util.loadJSON('../yelp/reviews_by_100_users.json')
   for userID in userListMap.keys():
     userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
+    userListMap[userID]['reviewMap'] = {} # create empty reviewMap for each user
   createMetaData(review_data, userListMap)
   print 'number of users', len(userListMap)
   # IMPLEMENT SCORE CALCULATION HERE: 
-  edgeVals = calculateJaccardVals(userListMap)  # !) Jaccard Vals
+  # edgeVals = calculateJaccardVals(userListMap)  # !) Jaccard Vals
+  # edgeVals = calculateRatingVals(userListMap)
   # edgeVals = calculateAttrVals(userListMap)
   
   print 'number of edges calculated', len(edgeVals)
