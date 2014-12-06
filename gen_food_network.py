@@ -61,32 +61,8 @@ def plotDistributionJaccard(jaccardVals):
   plt.scatter(x, jaccardList)
   plt.show()
 
-# create edge list given list of jaccard values for each pair of nodes
-def createFoodNetwork(jaccardVals, user_map, edgesFile):
-  file = open(edgesFile, "w")
-  for pair in jaccardVals:
-    val = jaccardVals[pair] 
-    # DECIDE WHAT SCORE THRESHOLD TO USE WHEN CREATING AN EDGE
-    if val > 0:   #create an edge if jaccard val > 0 
-      node1ID = pair[0]
-      node2ID = pair[1]
-      # node1ID = user_map[pair[0]]['node_id']
-      # node2ID = user_map[pair[1]]['node_id']
-      line = "{0} {1}\n".format(node1ID, node2ID)
-      file.write(line)
-  file.close()
-
-# add meta data to the userListMap 
-# --> restauMap
-def main():
-  userMapFile = "data/user_list_map_1000.p"
-  userListMap = pickle.load( open( userMapFile, "rb" ) )
-  review_data = util.loadJSON('../yelp/reviews_by_1000_users.json')
-  for userID in userListMap.keys():
-    userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
-  createMetaData(review_data, userListMap)
-  print 'number of users', len(userListMap)
-  # IMPLEMENT SCORE CALCULATION HERE: 
+# calculate similarity of users based on their Jaccard similarity
+def calculateJaccardVals(userListMap):
   jaccardVals = {}  # {(node1ID, node2ID): jaccardSimValue}
   for node1ID in userListMap.keys():
     for node2ID in userListMap.keys():
@@ -97,11 +73,47 @@ def main():
       if pair not in jaccardVals and pair2 not in jaccardVals:  #undirected graph
         jaccardSimValue = calculateJaccardSim(userListMap[node1ID], userListMap[node2ID])
         jaccardVals[pair] = jaccardSimValue
-  print 'number of edges calculated', len(jaccardVals)
+  return jaccardVals
+
+# calculate similarity of users based on how much they value a certain attribute in a restaurant
+def calculateAttrVals(userListMap):
+  attrVals = {}
+  return attrVals
+
+# create edge list given list of jaccard values for each pair of nodes
+def createFoodNetwork(edgeVals, user_map, edgesFile):
+  file = open(edgesFile, "w")
+  for pair in edgeVals:
+    val = edgeVals[pair] 
+    # DECIDE WHAT SCORE THRESHOLD TO USE WHEN CREATING AN EDGE
+    if val > 0:   #create an edge if jaccard val > 0 
+      # node1ID = pair[0]
+      # node2ID = pair[1]
+      node1ID = user_map[pair[0]]['node_id']
+      node2ID = user_map[pair[1]]['node_id']
+      line = "{0} {1}\n".format(node1ID, node2ID)
+      file.write(line)
+  file.close()
+
+# add meta data to the userListMap 
+# --> restauMap
+def main():
+  userMapFile = "data/user_list_map_100.p"
+  userListMap = pickle.load( open( userMapFile, "rb" ) )
+  review_data = util.loadJSON('../yelp/reviews_by_100_users.json')
+  for userID in userListMap.keys():
+    userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
+  createMetaData(review_data, userListMap)
+  print 'number of users', len(userListMap)
+  # IMPLEMENT SCORE CALCULATION HERE: 
+  edgeVals = calculateJaccardVals(userListMap)  # !) Jaccard Vals
+  # edgeVals = calculateAttrVals(userListMap)
+  
+  print 'number of edges calculated', len(edgeVals)
 
   # plotBucketDistributionJaccard(jaccardVals)
-  edgesFile = 'food_ntwk/food_ntwk_edge_list_1000_userIDs.txt'
-  createFoodNetwork(jaccardVals, userListMap, edgesFile)
+  edgesFile = 'food_ntwk/food_ntwk_edge_list_100.txt'
+  createFoodNetwork(edgeVals, userListMap, edgesFile)
   g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
   print 'num Nodes', g.GetNodes()
   print 'num Edges', g.GetEdges()
