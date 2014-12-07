@@ -61,7 +61,7 @@ def main():
 	# For testing
 	# foodGraph = snap.GenRndGnm(snap.PUNGraph, 10, 25)
 	# evalGraph = snap.GenRndGnm(snap.PUNGraph, 10, 25)
-	foodEdgesFile = 'food_ntwk/food_ntwk_edge_list_1000.txt'
+	foodEdgesFile = 'food_ntwk/attr_edge_list_1000.txt'
 	foodGraph = snap.LoadEdgeList(snap.PUNGraph, foodEdgesFile, 0, 1)
 
 	evalEdgesFile = 'eval_ntwk/eval_ntwk_edge_list_1000.txt'
