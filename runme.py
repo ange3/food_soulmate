@@ -1,10 +1,17 @@
 import gen_random_users as genUsers
 import gen_food_network as genFoodNet
 import gen_eval_network as genEvalNet
-import json
+import CNMCommunity as CNM
+import json, pickle
 
 NUM_USERS = 1000
 
+
+def createNodeList(userMap):
+  nodelist = []
+  for key in userMap.keys():
+    nodelist.append(userMap[key]['node_id'])
+  print nodelist
 
 '''
 Generates a random sampling of good users given a sample size
@@ -17,6 +24,10 @@ def main():
   genUsers.genRandomUsers(NUM_USERS)
   # userJSONFile = "../yelp/user_{}_random.json".format(NUM_USERS)
   userMapFile = "data/user_list_map_{}_random.p".format(NUM_USERS)
+  userMap = pickle.load( open( userMapFile, "rb" ) )
+
+  nodelist = createNodeList(userMap)
+
   genUsers.genReviews(userMapFile, NUM_USERS)
   reviewJSONFile = "../yelp/reviews_by_{}_users_random.json".format(NUM_USERS)
 
