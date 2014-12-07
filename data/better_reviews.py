@@ -12,10 +12,19 @@ def loadJSON(fileName):
 def getFoodBusinessIDs(business_data):
   print 'orig num businesses', len(business_data)
   businessMap = {}
+  restaurant_data = []
   for business in business_data:
     if 'Restaurants' in business['categories']:
       businessMap[business['business_id']] = 1
-  print 'new num businesses', len(businessMap)
+      restaurant_data.append(business)
+
+  newBusinessDataFile = "../../yelp/restaurants.json"
+  with open(newBusinessDataFile, 'w') as outfile:
+    json.dump(restaurant_data, outfile, sort_keys=True, indent=4)
+  print 'created JSON file:', newBusinessDataFile
+
+  updated_business_data = loadJSON(newBusinessDataFile)
+  print 'valid json, new num businesses = ', len(updated_business_data)
   return businessMap
 
 def main():
@@ -23,7 +32,7 @@ def main():
   business_data = loadJSON('../../yelp/business.json')
   businessMap = getFoodBusinessIDs(business_data)
   print 'original num reviews', len(review_data)
-  userMapFile = "user_list_map_10000.p"
+  userMapFile = "user_list_map_2.p"
   userListMap = pickle.load( open( userMapFile, "rb" ) )
   # print userListMap
   good_data = []
@@ -31,7 +40,7 @@ def main():
     if review['user_id'] in userListMap and review['business_id'] in businessMap:  #checks if user id in any of the keys of map of users and business is food
       # print review
       good_data.append(review)
-  newUserDataFile = "../../yelp/reviews_by_10000_users.json"
+  newUserDataFile = "../../yelp/reviews_by_2_users.json"
 
   with open(newUserDataFile, 'w') as outfile:
     json.dump(good_data, outfile, sort_keys=True, indent=4)
