@@ -2,7 +2,7 @@ import gen_random_users as genUsers
 import gen_food_network as genFoodNet
 import gen_eval_network as genEvalNet
 import CNMCommunity as CNM
-import json, pickle
+import json, pickle, snap
 
 NUM_USERS = 1000
 
