@@ -47,7 +47,8 @@ def main():
 
   # 3) Load Eval Network (entire graph)
   # TO-DO
-  evalNtwkFile = 'eval_ntwk/eval_edge_list_phoenix.txt'
+  evalIndices = GNM.inputEvalCmtys()
+  
 
   # 4) Calculate Accuracy
   # TO-DO
