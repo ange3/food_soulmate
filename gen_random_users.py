@@ -50,9 +50,9 @@ def genRandomUsers(numUsers):
   userListMapLoaded = pickle.load( open( pickleFile, "rb" ) )
   if userListMapLoaded is not None:
     print 'sanity check: user list map loaded correctly with {} users'.format(len(userListMapLoaded))
-    randUser = random.choice(userListMapLoaded.keys())
-    print 'user node ID in shortened user list', userListMapLoaded[randUser]['node_id']
-    print 'user node ID in full user list', fullUserList[randUser]['node_id']
+    # randUser = random.choice(userListMapLoaded.keys())
+    # print 'user node ID in shortened user list', userListMapLoaded[randUser]['node_id']
+    # print 'user node ID in full user list', fullUserList[randUser]['node_id']
 
 # returns a map of IDs of all food businesses
 def getFoodBusinessIDs(business_data):
