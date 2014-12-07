@@ -26,8 +26,6 @@ def plotBucketDistribution(edgeVals):
     if not math.isnan(val):
       index = math.ceil(val*100)
       buckets[int(index)] += 1
-    else:
-      print val
   print buckets
   x = np.arange(0,1.01,0.01)
   plt.title('Attribute Compatibility Distribution for 1000 Yelp users')

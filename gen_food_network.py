@@ -37,7 +37,7 @@ def calculateAttrPref(node, restaurantSet, business_data):
   # normalize attribute importance scores to 0-1
   numRestau = len(restaurantSet)
   # print 'num restaus', numRestau
-  if numRestausWithPrice != numRestau:
+  # if numRestausWithPrice != numRestau:
     # print 'ASSUMPTION WRONG: different num restaurants and num restaurants with price'
 
   for attr, count in attributePrefPos.items():
@@ -181,7 +181,7 @@ def createFoodNetwork(edgeVals, user_map, edgesFile):
   for pair in edgeVals:
     val = edgeVals[pair] 
     # DECIDE WHAT SCORE THRESHOLD TO USE WHEN CREATING AN EDGE
-    if val > 0:   #create an edge if jaccard val > 0 
+    if val > 0.8:   #create an edge if jaccard val > 0 
       node1ID = pair[0]
       node2ID = pair[1]
       # node1ID = user_map[pair[0]]['node_id']
@@ -236,7 +236,7 @@ def main():
   # print edgeVals
   print 'number of edges calculated', len(edgeVals)
 
-  edgesFile = 'food_ntwk/attr_edge_list_1000.txt'
+  edgesFile = 'food_ntwk/attr_edge_list_1000_all.txt'
   createFoodNetwork(edgeVals, userListMap, edgesFile)
   g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
   print 'num Nodes', g.GetNodes()
