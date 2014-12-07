@@ -51,6 +51,14 @@ def generateIndices(foodCmtyV, evalCmtyV):
 	return nodeIndices
 
 
+def outputCmtys(cmtyV):
+	
+	#file = open("../yelp/eval_network_communities.txt", "w")
+	for cmty in cmtyV:
+		for NI in cmty:
+			print NI
+	#file.close()
+
 def main():
 	# evalFile = "../evalEdgeList.txt"
 	# foodFile = "../foodEdgeList.txt"
@@ -61,10 +69,10 @@ def main():
 	# For testing
 	# foodGraph = snap.GenRndGnm(snap.PUNGraph, 10, 25)
 	# evalGraph = snap.GenRndGnm(snap.PUNGraph, 10, 25)
-	foodEdgesFile = 'food_ntwk/attr_edge_list_1000.txt'
+	foodEdgesFile = 'food_ntwk/rati_edge_list_1000_threshold2.txt'
 	foodGraph = snap.LoadEdgeList(snap.PUNGraph, foodEdgesFile, 0, 1)
 
-	evalEdgesFile = 'eval_ntwk/eval_ntwk_edge_list_1000.txt'
+	evalEdgesFile = 'eval_ntwk/eval_ntwk_edge_list_100.txt'
 	evalGraph = snap.LoadEdgeList(snap.PUNGraph, evalEdgesFile, 0, 1)
 
 	foodCmtyV = snap.TCnComV()
@@ -98,7 +106,8 @@ def main():
 	jaccardAverage = float(jaccardSum)/NUMNODES
 	print "Accuracy: %f" % jaccardAverage
 
-
+	#Output eval clusters for reading later
+	outputCmtys(evalCmtyV)
 
 
 	

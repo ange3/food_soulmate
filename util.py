@@ -19,7 +19,7 @@ def loadJSON(fileName):
     where 0 <= similarityValue <= 1
   @return: None
 '''
-def plotBucketDistribution(edgeVals):
+def plotBucketDistribution(edgeVals, scoreType, numUsers):
   valsList = [edgeVals[key] for key in edgeVals if edgeVals[key] != 0]
   buckets = [0] * 101
   for val in valsList:
@@ -28,12 +28,15 @@ def plotBucketDistribution(edgeVals):
       buckets[int(index)] += 1
   print buckets
   x = np.arange(0,1.01,0.01)
-  plt.title('Attribute Compatibility Distribution for 1000 Yelp users')
-  plt.xlabel('Compatibility Score')
+  titleStr = '{} Distribution for {} Yelp users'.format(scoreType, numUsers)
+  plt.title(titleStr)
+  plt.xlabel(scoreType)
   plt.ylabel('Count of edges')
   plt.scatter(x, buckets)
   plt.plot(x, buckets)
-  # plt.axis([0,1,0, 450])
+  plt.xlim(0,1)
+  plt.ylim(0, max(valsList)+10)
+  # plt.axis([0,1,0, 350000])
   plt.show()
 
 
