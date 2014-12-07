@@ -38,7 +38,7 @@ def calculateAttrPref(node, restaurantSet, business_data):
   numRestau = len(restaurantSet)
   # print 'num restaus', numRestau
   if numRestausWithPrice != numRestau:
-    print 'ASSUMPTION WRONG: different num restaurants and num restaurants with price'
+    # print 'ASSUMPTION WRONG: different num restaurants and num restaurants with price'
 
   for attr, count in attributePrefPos.items():
     # if count > numRestau:
@@ -102,8 +102,8 @@ def calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB):
 def getAttrCompScore(node1, node2):
   attributePrefA = node1['attributePosPrefCounter']
   attributePrefB = node2['attributePosPrefCounter']
-  allAttributes = attributePrefA.most_common(3) + attributePrefB.most_common(3)
-  # allAttributes = attributePrefA.most_common(len(attributePrefA)) + attributePrefB.most_common(len(attributePrefB))  # only picking the top 3 most important attributes for A and B and calculating score based on that
+  # allAttributes = attributePrefA.most_common(3) + attributePrefB.most_common(3)
+  allAttributes = attributePrefA.most_common(len(attributePrefA)) + attributePrefB.most_common(len(attributePrefB))  # only picking the top 3 most important attributes for A and B and calculating score based on that
   compVals = []
   for attr, totalScore in allAttributes:
     valA = attributePrefA[attr]
