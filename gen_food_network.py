@@ -3,9 +3,10 @@ import util
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import Counter
+import datetime
 
 # iterate through all reviews and add the business to the restauMap IF it is a food establishment
-# restaurantMap: {businessID: [reviewID, reviewID ]}
+# reviewMap: {reviewID: (star,date))}
 # reviewMap: {reviewID: rating}
 def createMetaData(review_data, userListMap):
   for review in review_data:
@@ -17,7 +18,7 @@ def createMetaData(review_data, userListMap):
       if businessID not in userListMap[userID]['restaurantMap']:
         userListMap[userID]['restaurantMap'][businessID] = []
       userListMap[userID]['restaurantMap'][businessID].append(reviewID)
-      userListMap[userID]['reviewMap'][reviewID] = review['stars']
+      userListMap[userID]['reviewMap'][reviewID] = (review['stars'], review['date'])
 
 # returns the ratio of size of overlapping restaurants set / union of all restaurants
 def calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB):
@@ -94,11 +95,14 @@ def calculateAttrSim(node1, node2, restaurantSetA, restaurantSetB):
 
 # returns the similarity score between node1 and node2 based on the first part of our composite score formula (see Project Milestone)
 def calculateRatingSim(node1, node2):
-  score = 0
+  reviewScores = []
   restaurantSet1 = set(node1['restaurantMap'].keys()) # all restaurants reviewed by user 1
   restaurantSet2 = set(node2['restaurantMap'].keys()) # all restaurants reviewed by user 2
 
   if len(restaurantSet1) == 0 or len(restaurantSet2) == 0: # if either user has not reviewed any restaurants
+    return 0
+
+  if len(set.intersection(restaurantSet1, restaurantSet2)) == 0: # no commonly reviewed restaurants
     return 0
 
   for restaurantA in restaurantSet1: # for each restaurant reviewed by node2
@@ -106,21 +110,30 @@ def calculateRatingSim(node1, node2):
       if restaurantA == restaurantB: # if the reviewed restaurant is the same
         reviewSetA = node1['restaurantMap'][restaurantA] # node1's reviews of common restaurant
         reviewSetB = node2['restaurantMap'][restaurantA] # node2's reviews of common restaurant
-        ratingSumA = 0.0
-        ratingSumB = 0.0
-        for reviewID in reviewSetA: # use the average star rating for that restaurant
-        # QUESTION: Should we go with most recent review only or first only? Most restaurants are only reviewed once i.e. len(reviewSetZ) = 1
-          # print node1['reviewMap'][reviewID]
-          ratingSumA += node1['reviewMap'][reviewID]
-        for reviewID in reviewSetB: 
-          ratingSumB += node2['reviewMap'][reviewID]
+        
+        latestDateA = latestDateB = datetime.datetime(2010, 1, 1)
+        ratingA = 0.0
+        ratingB = 0.0
 
-        avgRatingA = ratingSumA/len(reviewSetA) # average rating by node1 of restaurantA
-        avgRatingB = ratingSumB/len(reviewSetB) # average rating by node2 of restaurantA
+        for reviewID in reviewSetA: # find node1's most recent review for that restaurant
+          date = datetime.datetime.strptime(node1['reviewMap'][reviewID][1], '%Y-%m-%d')
+          if date > latestDateA: 
+            latestDateA = date
+            ratingA = node1['reviewMap'][reviewID][0]
 
-        score += (2.0 - abs(avgRatingA - avgRatingB))* math.pow( (abs(avgRatingA-3) + abs(avgRatingB-3)) / 2.0, 2.0 )
-  
-  return score
+        for reviewID in reviewSetB: # find node2's most recent review for that restaurant
+          date = datetime.datetime.strptime(node2['reviewMap'][reviewID][1], '%Y-%m-%d')
+          if date > latestDateB: 
+            latestDateB = date
+            ratingB = node2['reviewMap'][reviewID][0]
+
+        # score for this commonly reviewed restaurant
+        score = (2.0 - abs(ratingA - ratingB))* math.pow( (abs(ratingA - 3.0) + abs(ratingB - 3.0)) / 2.0, 2.0 )
+        reviewScores.append(score)
+  print 'len: ',len(reviewScores)
+  print 'compatibility_score: ',sum(reviewScores) / len(reviewScores) / 8.0
+  compatibility_score = sum(reviewScores) / len(reviewScores) / 8.0
+  return compatibility_score
 
 # calculate similarity of users based on how they rated restaurants
 def calculateRatingVals(userListMap):
@@ -135,7 +148,7 @@ def calculateRatingVals(userListMap):
       if pair not in ratingVals and pair2 not in ratingVals:# undirected graph
         ratingSimValue = calculateRatingSim(userListMap[node1ID], userListMap[node2ID])
         ratingVals[pair] = ratingSimValue
-
+        
   return ratingVals
 
 # create edge list given list of jaccard values for each pair of nodes
