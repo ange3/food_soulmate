@@ -102,8 +102,8 @@ def calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB):
 def getAttrCompScore(node1, node2):
   attributePrefA = node1['attributePosPrefCounter']
   attributePrefB = node2['attributePosPrefCounter']
-  # allAttributes = attributePrefA.most_common(3) + attributePrefB.most_common(3)
-  allAttributes = attributePrefA.most_common(len(attributePrefA)) + attributePrefB.most_common(len(attributePrefB))  # only picking the top 3 most important attributes for A and B and calculating score based on that
+  # allAttributes = attributePrefA.most_common(3) + attributePrefB.most_common(3) # only picking the top 3 most important attributes for A and B and calculating score based on that
+  allAttributes = attributePrefA.most_common(len(attributePrefA)) + attributePrefB.most_common(len(attributePrefB))  #picks ALL attributes
   compVals = []
   for attr, totalScore in allAttributes:
     valA = attributePrefA[attr]
@@ -152,26 +152,10 @@ def calculateRatingSim(node1, node2):
         # score for this commonly reviewed restaurant
         score = (2.0 - abs(ratingA - ratingB))* math.pow( (abs(ratingA - 3.0) + abs(ratingB - 3.0)) / 2.0, 2.0 )
         reviewScores.append(score)
-  print 'len: ',len(reviewScores)
-  print 'compatibility_score: ',sum(reviewScores) / len(reviewScores) / 8.0
+  # print 'len: ',len(reviewScores)
+  # print 'compatibility_score: ',sum(reviewScores) / len(reviewScores) / 8.0
   compatibility_score = sum(reviewScores) / len(reviewScores) / 8.0
   return compatibility_score
-
-# calculate similarity of users based on how they rated restaurants
-def calculateRatingVals(userListMap):
-  ratingVals = {} # {(node1ID, node2ID): ratingSimValue}
-
-  for node1ID in userListMap.keys():
-    for node2ID in userListMap.keys():
-      if node1ID == node2ID: 
-        continue
-      pair = (node1ID, node2ID)
-      pair2 = (node2ID, node1ID)
-      if pair not in ratingVals and pair2 not in ratingVals:# undirected graph
-        ratingSimValue = calculateRatingSim(userListMap[node1ID], userListMap[node2ID])
-        ratingVals[pair] = ratingSimValue
-        
-  return ratingVals
 
 # @param: edgeVals = (node1ID, node2ID): score
 # create edge list given list of jaccard values for each pair of nodes
@@ -181,7 +165,7 @@ def createFoodNetwork(edgeVals, user_map, edgesFile):
   for pair in edgeVals:
     val = edgeVals[pair] 
     # DECIDE WHAT SCORE THRESHOLD TO USE WHEN CREATING AN EDGE
-    if val > 0.8:   #create an edge if jaccard val > 0 
+    if val > 0.8:   #create an edge if pair score > __
       node1ID = pair[0]
       node2ID = pair[1]
       # node1ID = user_map[pair[0]]['node_id']
@@ -189,23 +173,17 @@ def createFoodNetwork(edgeVals, user_map, edgesFile):
       line = "{0} {1}\n".format(node1ID, node2ID)
       file.write(line)
       count += 1
-  print 'number of edges with non-zero similarity', count
+  # print 'number of edges with non-zero similarity', count
   file.close()
 
-# add meta data to the userListMap 
-# for each node creates: restauMap
-def main():
-  userMapFile = "data/user_list_map_1000.p"
-  userListMap = pickle.load( open( userMapFile, "rb" ) )
-  review_data = util.loadJSON('../yelp/reviews_by_1000_users.json')
-  for userID in userListMap.keys():
-    userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
-    userListMap[userID]['reviewMap'] = {} # create empty reviewMap for each user
-  createMetaData(review_data, userListMap)
-  print 'number of users', len(userListMap)
-  # print userListMap
-  # print 'USER LIST MAP', userListMap
-  # IMPLEMENT SCORE CALCULATION HERE: 
+def createEdgeVals(userListMap, isJaccardScore, isAttrScore, isRatingScore):
+  if isJaccardScore:
+    print 'Calculating Jaccard Score Edge Values...'
+  elif isAttrScore: 
+    print 'Calculating Attribute Score Edge Values...'
+  elif isRatingScore:
+    print 'Calculating Rating Score Edge Values...'
+
   edgeVals = {}  # {(node1ID, node2ID): jaccardSimValue}
   # node1 and node 2 are the user_id's
   for index, node1 in enumerate(userListMap.keys()):
@@ -226,34 +204,72 @@ def main():
         pair = (node2ID, node1ID)
       if pair not in edgeVals:  #undirected graph
         # 1) Jaccard Vals
-        # pairValue = calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB)
+        if isJaccardScore:
+          pairValue = calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB)
         # 2) Attribute Vals
+        elif isAttrScore:
         # print 'PAIR IS', node1, node2        
-        pairValue = getAttrCompScore(userListMap[node1], userListMap[node2])
+          pairValue = getAttrCompScore(userListMap[node1], userListMap[node2])
+        elif isRatingScore:
+          pairValue = calculateRatingSim(userListMap[node1], userListMap[node2])
         edgeVals[pair] = pairValue
-
-  # edgeVals = calculateRatingVals(userListMap)
-  # print edgeVals
   print 'number of edges calculated', len(edgeVals)
-
-  edgesFile = 'food_ntwk/attr_edge_list_1000_all.txt'
-  createFoodNetwork(edgeVals, userListMap, edgesFile)
-  g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
-  print 'num Nodes', g.GetNodes()
-  print 'num Edges', g.GetEdges()
-  util.plotBucketDistribution(edgeVals)
-
-
-
-main()
-
+  return edgeVals
 
 '''
-sample test code in main
+  Creates 3 txt files that are the edge lists of each type of food network (based on Jaccard Val, Rating Score, Attribute Score)
 
-  print 'sample user', userListMap['QZWo-viRnL9EmsIAN6vHtg']
-  node1 = userListMap['3Z2c8dL_nRXc7dd5_sFsPw']
-  node2 = userListMap['f01B5tRtqf3k6ak1pPSAWw']
-  calculateJaccardSim(node1, node2)
+ @param userMapFile: filename of the pickle file (dict of users and their node IDs)
+ @param reviewJSONFile: filename of reviews that pertain to all users in userMapFile
+ @param thresholdJaccard: value between [0-1], if node pair score >= threshold, an edge will be created
+ @param thresholdRating: threshold for the rating score
+ @param thresholdAttr: threshold for the restaurant attribute score
 
+ @return None
 '''
+def createFoodNetworkEdgeLists(userMapFile, reviewJSONFile, thresholdJaccard, thresholdRating, thresholdAttr, numUsers):
+  userListMap = pickle.load( open( userMapFile, "rb" ) )
+  review_data = util.loadJSON('../yelp/reviews_by_1000_users.json')
+
+  # 1) add meta-data
+  for userID in userListMap.keys():
+    userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
+    userListMap[userID]['reviewMap'] = {} # create empty reviewMap for each user
+  createMetaData(review_data, userListMap)
+  print 'number of users', len(userListMap)
+
+  # 2) calculate scores for each edge
+  jaccardVals = createEdgeVals(userListMap, True, False, False)
+  attrVals = createEdgeVals(userListMap, False, True, False)
+  ratiVals = createEdgeVals(userListMap, False, False, True)
+
+  # 3) create food network for each score type
+  jaccardNtwkFile = 'food_ntwk_random/jacc_edge_list_{}users_{}.txt'.format(numUsers, thresholdJaccard)
+  attrNtwkFile = 'food_ntwk_random/attr_edge_list_{}users_{}.txt'.format(numUsers, thresholdRating)
+  ratiNtwkFile = 'food_ntwk_random/rati_edge_list_{}users_{}.txt'.format(numUsers, thresholdAttr)
+  createFoodNetwork(jaccardVals, userListMap, jaccardNtwkFile)
+  createFoodNetwork(attrVals, userListMap, attrNtwkFile)
+  createFoodNetwork(ratiVals, userListMap, ratiNtwkFile)
+
+  # 4) check if valid edge list and print info about each network
+  g = snap.LoadEdgeList(snap.PUNGraph, jaccardNtwkFile, 0, 1)
+  print 'Jaccard Network: Num Nodes = {}, Num Edges = {}'.format(g.GetNodes(), g.GetEdges())
+  g = snap.LoadEdgeList(snap.PUNGraph, attrNtwkFile, 0, 1)
+  print 'Attribute Network: Num Nodes = {}, Num Edges = {}'.format(g.GetNodes(), g.GetEdges())
+  g = snap.LoadEdgeList(snap.PUNGraph, ratiNtwkFile, 0, 1)
+  print 'Rating Network: Num Nodes = {}, Num Edges = {}'.format(g.GetNodes(), g.GetEdges())
+
+  # 5) plot distribution frequency of each score type
+  # IF IMPORT UTIL IS NOT WORKING FOR YOU, COMMENT OUT THESE LINES BELOW.
+  # util.plotBucketDistribution(jaccardVals, 'Jaccard Score', numUsers)
+  # util.plotBucketDistribution(attrVals, 'Attribute Compatibility', numUsers)
+  # minVal = min([val for key, val in ratiVals.items()])
+  # print 'MIN', minVal
+  # print type(minVal)
+  # print 'MAX', max([val for key, val in ratiVals.items()])
+  # ratiNormalizedVals = [(val+2.5)/5 for val in key,val in ratiVals.items()]
+  # util.plotBucketDistribution(ratiVals, 'Rating Score', numUsers)
+
+
+# Sample script
+# createFoodNetworkEdgeLists("data/user_list_map_1000.p", '../yelp/reviews_by_1000_users.json', 0.04, 0.4, 0.9)

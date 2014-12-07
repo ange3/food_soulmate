@@ -40,7 +40,7 @@ def createMap(user_data, numNodes):
       break
 
   # IF WE WANT TO CREATE A NEW USER JSON FILE:
-  newUserDataFile = "../../yelp/user_2.json"
+  newUserDataFile = "../../yelp/user_allgood.json"
 
   with open(newUserDataFile, 'w') as outfile:
     json.dump(good_data, outfile, sort_keys=True, indent=4)
@@ -53,13 +53,16 @@ def createMap(user_data, numNodes):
 
 def main():
   user_data = loadJSON()
-  userListMap = createMap(user_data, 2)
+  userListMap = createMap(user_data, 1000000)
   print 'num nodes in map', len(userListMap)
-  pickleFile = "user_list_map_2.p"
+  pickleFile = "user_list_map.p"
   pickle.dump( userListMap, open( pickleFile, "wb" ) )
   print 'created pickle file:', pickleFile
-  # userListMapLoaded = pickle.load( open( pickleFile, "rb" ) )
-  # print userListMapLoaded['-jNc1Ko1rHhlibmmy3U7Pw']
+  
+    # SANITY CHECK
+  userListMapLoaded = pickle.load( open( pickleFile, "rb" ) )
+  if userListMapLoaded is not None:
+    print 'sanity check: user list map loaded correctly with {} users'.format(len(userListMapLoaded))
 
 
 main()
