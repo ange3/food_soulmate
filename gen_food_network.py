@@ -195,9 +195,9 @@ def createFoodNetwork(edgeVals, user_map, edgesFile):
 # add meta data to the userListMap 
 # for each node creates: restauMap
 def main():
-  userMapFile = "data/user_list_map_100.p"
+  userMapFile = "data/user_list_map_1000.p"
   userListMap = pickle.load( open( userMapFile, "rb" ) )
-  review_data = util.loadJSON('../yelp/reviews_by_100_users.json')
+  review_data = util.loadJSON('../yelp/reviews_by_1000_users.json')
   for userID in userListMap.keys():
     userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
     userListMap[userID]['reviewMap'] = {} # create empty reviewMap for each user
@@ -236,7 +236,7 @@ def main():
   # print edgeVals
   print 'number of edges calculated', len(edgeVals)
 
-  edgesFile = 'food_ntwk/attr_edge_list_100.txt'
+  edgesFile = 'food_ntwk/attr_edge_list_1000.txt'
   createFoodNetwork(edgeVals, userListMap, edgesFile)
   g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
   print 'num Nodes', g.GetNodes()

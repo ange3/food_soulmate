@@ -23,16 +23,19 @@ def plotBucketDistribution(edgeVals):
   valsList = [edgeVals[key] for key in edgeVals if edgeVals[key] != 0]
   buckets = [0] * 101
   for val in valsList:
-    index = math.ceil(val*100)
-    buckets[int(index)] += 1
+    if not math.isnan(val):
+      index = math.ceil(val*100)
+      buckets[int(index)] += 1
+    else:
+      print val
   print buckets
   x = np.arange(0,1.01,0.01)
-  plt.title('Jaccard Non-Zero Similarity Distribution for 1000 Yelp users')
-  plt.xlabel('Jaccard Similarity')
+  plt.title('Attribute Compatibility Distribution for 1000 Yelp users')
+  plt.xlabel('Compatibility Score')
   plt.ylabel('Count of edges')
   plt.scatter(x, buckets)
   plt.plot(x, buckets)
-  # plt.axis([0,1,0, 30])
+  # plt.axis([0,1,0, 450])
   plt.show()
 
 
