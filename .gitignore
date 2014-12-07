@@ -1,3 +1,4 @@
+# ignore food_ntwk_random directory because it creates different random sets of edge lists every time
 food_ntwk_random/**
 
 # python compiler files
