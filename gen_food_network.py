@@ -2,6 +2,7 @@ import pickle, json, math, snap
 import util
 import numpy as np
 import matplotlib.pyplot as plt
+from collections import Counter
 
 # iterate through all reviews and add the business to the restauMap IF it is a food establishment
 # restaurantMap: {businessID: [reviewID, reviewID ]}
@@ -17,9 +18,7 @@ def createMetaData(review_data, userListMap):
       userListMap[userID]['restaurantMap'][businessID].append(reviewID)
 
 # returns the ratio of size of overlapping restaurants set / union of all restaurants
-def calculateJaccardSim(node1, node2):
-  restaurantSetA = set(node1['restaurantMap'].keys())
-  restaurantSetB = set(node2['restaurantMap'].keys())
+def calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB):
   if len(restaurantSetA) == 0 or len(restaurantSetB) == 0:
     return 0
   # print 'restaurantSetA', restaurantSetA, len(restaurantSetA)
@@ -30,55 +29,66 @@ def calculateJaccardSim(node1, node2):
   # print ratio
   return ratio
 
-# plots the frequency distribution of each Jaccard Similarity value
-# buckets = [0.1, 0.2, ... 1]
-def plotBucketDistributionJaccard(jaccardVals):
-  jaccardList = [jaccardVals[key] for key in jaccardVals if jaccardVals[key] != 0]
-  jaccardListBuckets = [0] * 101
-  for val in jaccardList:
-    index = math.ceil(val*100)
-    jaccardListBuckets[int(index)] += 1
-  print jaccardListBuckets
-  print 'number of edges with non-zero similarity', len(jaccardListBuckets)
-  x = np.arange(0,1.01,0.01)
-  plt.title('Jaccard Non-Zero Similarity Distribution for 1000 Yelp users')
-  plt.xlabel('Jaccard Similarity')
-  plt.ylabel('Count of edges')
-  plt.scatter(x, jaccardListBuckets)
-  plt.plot(x, jaccardListBuckets)
-  # plt.axis([0,1,0, 30])
-  plt.show()
-
-# plot out all jaccard values
-def plotDistributionJaccard(jaccardVals):
-  jaccardList = [jaccardVals[key] for key in jaccardVals if jaccardVals[key] != 0]
-  print jaccardList
-  print 'number of edges with non-zero similarity', len(jaccardList)
-  x = np.arange(len(jaccardList))
-  plt.title('Jaccard Non-Zero Similarity Distribution for 1000 Yelp users')
-  plt.ylabel('Jaccard Similarity')
-  plt.xlabel('Pairs of nodes')
-  plt.scatter(x, jaccardList)
-  plt.show()
-
-# calculate similarity of users based on their Jaccard similarity
-def calculateJaccardVals(userListMap):
-  jaccardVals = {}  # {(node1ID, node2ID): jaccardSimValue}
-  for node1ID in userListMap.keys():
-    for node2ID in userListMap.keys():
-      if node1ID == node2ID:
-        continue
-      pair = (node1ID, node2ID)
-      pair2 = (node2ID, node1ID)
-      if pair not in jaccardVals and pair2 not in jaccardVals:  #undirected graph
-        jaccardSimValue = calculateJaccardSim(userListMap[node1ID], userListMap[node2ID])
-        jaccardVals[pair] = jaccardSimValue
-  return jaccardVals
+# return average of comp score for all attributes
+def getAttrCompScore(attributePrefA, attributePrefB, numRestauA, numRestauB):
+  allAttributes = Counter(attributePrefA.keys()) + Counter(attributePrefB.keys())
+  compVals = []
+  for attr in allAttributes:
+    valA = attributePrefA[attr]/float(numRestauA)
+    valB = attributePrefB[attr]/float(numRestauB)
+    if valB != 0 and valA != 0:
+      comp = min(valA/float(valB), valB/float(valA))
+      compVals.append(comp)
+    # otherwise the comp will def be 0, in which case no need to add to the average
+  # print 'compVals', compVals
+  return np.mean(compVals)
 
 # calculate similarity of users based on how much they value a certain attribute in a restaurant
-def calculateAttrVals(userListMap):
-  attrVals = {}
-  return attrVals
+def calculateAttrSim(node1, node2, restaurantSetA, restaurantSetB):
+  restaurantSetAll = set.union(restaurantSetA, restaurantSetB)
+  business_data = util.loadJSON('../yelp/restaurants.JSON')
+  # attributePref = {restauAttribute: [countA, countB], ... }
+  # positive are attributes that are true, i.e. customer is looking for
+  # negative are attributes that are false, i.e. customer does not care about
+  attributePrefPosA = Counter()
+  attributePrefNegA = Counter()
+  attributePrefPosB = Counter()
+  attributePrefNegB = Counter()  
+  numRestausWithPriceA = 0
+  numRestausWithPriceB = 0
+  # can use this to calculate average price range later
+  for business in business_data:
+    if business['business_id'] in restaurantSetAll:
+      attributeMap = business['attributes']
+      for attribute, val in attributeMap.items():
+        if type(val) == dict:
+          # iterate through the elements in this and pull out each attr/val
+          continue
+          # val = list(val.values())  #for cases like parking: {garage: True, street: true}, flattens into just a list of the values
+        if type(val) == str or type(val) == unicode:
+          continue
+        valList = [val]
+        if business['business_id'] in restaurantSetA:
+          attributePrefPosA[attribute] += sum(valList)  #sum of a list of bools = number of True vals for this attribute  (True = 1)
+          attributePrefNegA[attribute] += len(valList) - sum(valList)
+          if attribute == "Price Range":
+            numRestausWithPriceA += 1
+        if business['business_id'] in restaurantSetB:
+          attributePrefPosB[attribute] += sum(valList)
+          attributePrefNegB[attribute] += len(valList) - sum(valList)
+          if attribute == "Price Range":
+            numRestausWithPriceB += 1
+  # print 'ATTRIBUTES A', attributePrefPosA
+  # print 'ATTRIBUTES B', attributePrefPosB
+  # print 'numRestausWithPriceA', numRestausWithPriceA
+  # print 'numRestausWithPriceB', numRestausWithPriceB
+  # print 'NEG ATTRIBUTES A', attributePrefNegA
+  # print 'NEG ATTRIBUTES B', attributePrefNegB
+  # print restaurantSetA
+  # print restaurantSetB 
+  posCompScore = getAttrCompScore(attributePrefPosA, attributePrefPosB, len(restaurantSetA), len(restaurantSetB))
+  # print 'Compatibility Score:', posCompScore
+  return posCompScore
 
 # create edge list given list of jaccard values for each pair of nodes
 def createFoodNetwork(edgeVals, user_map, edgesFile):
@@ -96,7 +106,7 @@ def createFoodNetwork(edgeVals, user_map, edgesFile):
   file.close()
 
 # add meta data to the userListMap 
-# --> restauMap
+# for each node creates: restauMap
 def main():
   userMapFile = "data/user_list_map_100.p"
   userListMap = pickle.load( open( userMapFile, "rb" ) )
@@ -105,14 +115,37 @@ def main():
     userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
   createMetaData(review_data, userListMap)
   print 'number of users', len(userListMap)
+  # print 'USER LIST MAP', userListMap
   # IMPLEMENT SCORE CALCULATION HERE: 
-  edgeVals = calculateJaccardVals(userListMap)  # !) Jaccard Vals
-  # edgeVals = calculateAttrVals(userListMap)
+  edgeVals = {}  # {(node1ID, node2ID): jaccardSimValue}
+  # node1 and node 2 are the user_id's
+  for node1 in userListMap.keys():
+    restaurantSetA = set(userListMap[node1]['restaurantMap'].keys())
+    if len(restaurantSetA) == 0:
+      continue
+    for node2 in userListMap.keys():
+      restaurantSetB = set(userListMap[node2]['restaurantMap'].keys())
+      if len(restaurantSetB) == 0:
+        continue
+      node1ID = userListMap[node1]['node_id']
+      node2ID = userListMap[node2]['node_id']
+      if node1ID == node2ID:
+        continue
+      pair = (node1ID, node2ID)  # pair always in increasing node ID order
+      if int(node2ID) > int(node1ID):
+        pair = (node2ID, node1ID)
+      if pair not in edgeVals:  #undirected graph
+        # 1) Jaccard Vals
+        # pairValue = calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB)
+        # 2) Attribute Vals
+        # print 'PAIR IS', node1, node2        
+        pairValue = calculateAttrSim(userListMap[node1], userListMap[node2], restaurantSetA, restaurantSetB)
+        edgeVals[pair] = pairValue
   
   print 'number of edges calculated', len(edgeVals)
 
-  # plotBucketDistributionJaccard(jaccardVals)
-  edgesFile = 'food_ntwk/food_ntwk_edge_list_100.txt'
+  # util.plotBucketDistribution(edgeVals)
+  edgesFile = 'food_ntwk/attr_edge_list_100.txt'
   createFoodNetwork(edgeVals, userListMap, edgesFile)
   g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
   print 'num Nodes', g.GetNodes()

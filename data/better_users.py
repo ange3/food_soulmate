@@ -40,22 +40,22 @@ def createMap(user_data, numNodes):
       break
 
   # IF WE WANT TO CREATE A NEW USER JSON FILE:
-  # newUserDataFile = "../../yelp/user_100.json"
+  newUserDataFile = "../../yelp/user_2.json"
 
-  # with open(newUserDataFile, 'w') as outfile:
-  #   json.dump(good_data, outfile, sort_keys=True, indent=4)
-  # print 'created JSON file:', newUserDataFile
+  with open(newUserDataFile, 'w') as outfile:
+    json.dump(good_data, outfile, sort_keys=True, indent=4)
+  print 'created JSON file:', newUserDataFile
 
-  # updated_user_data = loadJSON(newUserDataFile)
-  # print 'valid JSON, num users =', len(updated_user_data)
+  updated_user_data = loadJSON(newUserDataFile)
+  print 'valid JSON, num users =', len(updated_user_data)
   
   return userListMap
 
 def main():
   user_data = loadJSON()
-  userListMap = createMap(user_data, 100000)
+  userListMap = createMap(user_data, 2)
   print 'num nodes in map', len(userListMap)
-  pickleFile = "user_list_map.p"
+  pickleFile = "user_list_map_2.p"
   pickle.dump( userListMap, open( pickleFile, "wb" ) )
   print 'created pickle file:', pickleFile
   # userListMapLoaded = pickle.load( open( pickleFile, "rb" ) )
