@@ -1,4 +1,4 @@
-import json
+import json, math
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -26,7 +26,6 @@ def plotBucketDistribution(edgeVals):
     index = math.ceil(val*100)
     buckets[int(index)] += 1
   print buckets
-  print 'number of edges with non-zero similarity', len(buckets)
   x = np.arange(0,1.01,0.01)
   plt.title('Jaccard Non-Zero Similarity Distribution for 1000 Yelp users')
   plt.xlabel('Jaccard Similarity')

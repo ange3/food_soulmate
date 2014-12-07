@@ -4,20 +4,86 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import Counter
 
-# iterate through all reviews and add the business to the restauMap IF it is a food establishment
-# restaurantMap: {businessID: [reviewID, reviewID ]}
-# reviewMap: {reviewID: rating}
+def calculateAttrPref(node, restaurantSet, business_data):
+  # positive are attributes that are true, i.e. customer is looking for
+  # negative are attributes that are false, i.e. customer does not care about
+  attributePrefPos = Counter()
+  attributePrefNeg = Counter()
+  if len(restaurantSet) == 0:
+    node['attributePosPrefCounter'] = None
+    node['attributeNegPrefCounter'] = None
+    node['avgPriceRange'] = None
+    return None
+
+  numRestausWithPrice = 0
+  for business in business_data:
+    if business['business_id'] in restaurantSet:
+      attributeMap = business['attributes']
+      for attribute, val in attributeMap.items():
+        if type(val) == dict:
+          # iterate through the elements in this and pull out each attr/val
+          continue
+          # val = list(val.values())  #for cases like parking: {garage: True, street: true}, flattens into just a list of the values
+        if type(val) == str or type(val) == unicode:
+          continue
+        valList = [val]
+        if business['business_id'] in restaurantSet:
+          attributePrefPos[attribute] += sum(valList)  #sum of a list of bools = number of True vals for this attribute  (True = 1)
+          attributePrefNeg[attribute] += len(valList) - sum(valList)
+          if attribute == "Price Range":
+            numRestausWithPrice += 1
+
+  # normalize attribute importance scores to 0-1
+  numRestau = len(restaurantSet)
+  # print 'num restaus', numRestau
+  if numRestausWithPrice != numRestau:
+    print 'ASSUMPTION WRONG: different num restaurants and num restaurants with price'
+
+  for attr, count in attributePrefPos.items():
+    # if count > numRestau:
+    #   print 'UH OH attribute seen > numRestau', attr
+    score = count/float(numRestau)
+    # print 'count is {}, score is {}'.format(count, score)
+    attributePrefPos[attr] = score
+  for attr, count in attributePrefNeg.items():
+    score = count/float(numRestau)
+    attributePrefNeg[attr] = score
+
+  node['attributePosPrefCounter'] = attributePrefPos
+  node['attributeNegPrefCounter'] = attributePrefNeg
+  if numRestausWithPrice != 0:
+    node['avgPriceRange'] = attributePrefPos['Price Range']/float(numRestausWithPrice)
+  else:
+    node['avgPriceRange'] = None
+
+'''
+  Create meta-data for each user.
+  Each user node has the following pieces of information:
+    # restaurantMap: {businessID: [reviewID, reviewID ]}
+    # reviewMap: {reviewID: rating}
+    # attributePosPrefCounter: {restauAttribute: score} --> showing like, scores from 0-1
+    # attributeNegPrefCounter: {restauAttribute: score} --> showing dislike
+    # avgPriceRange: int
+
+Note: restaurants that are added to the restaurantMap are only food establishments because the reviews.JSON file is pre-screened to only include reviews made for a restaurant 
+'''
 def createMetaData(review_data, userListMap):
   for review in review_data:
     userID = review['user_id']
     if userID in userListMap:
       reviewID = str(review['review_id'])
       businessID = str(review['business_id'])
-      # check if business is food
       if businessID not in userListMap[userID]['restaurantMap']:
         userListMap[userID]['restaurantMap'][businessID] = []
       userListMap[userID]['restaurantMap'][businessID].append(reviewID)
       userListMap[userID]['reviewMap'][reviewID] = review['stars']
+
+  business_data = util.loadJSON('../yelp/restaurants.JSON')
+  for user_id, user in userListMap.items():
+    # print user
+    restaurantSet = set(user['restaurantMap'].keys())
+    # print restaurantSet
+    calculateAttrPref(user, restaurantSet, business_data)
 
 # returns the ratio of size of overlapping restaurants set / union of all restaurants
 def calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB):
@@ -32,65 +98,21 @@ def calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB):
   return ratio
 
 # return average of comp score for all attributes
-def getAttrCompScore(attributePrefA, attributePrefB, numRestauA, numRestauB):
-  allAttributes = Counter(attributePrefA.keys()) + Counter(attributePrefB.keys())
+def getAttrCompScore(node1, node2):
+  attributePrefA = node1['attributePosPrefCounter']
+  attributePrefB = node2['attributePosPrefCounter']
+  allAttributes = attributePrefA.most_common(3) + attributePrefB.most_common(3)
+  # allAttributes = attributePrefA.most_common(len(attributePrefA)) + attributePrefB.most_common(len(attributePrefB))  # only picking the top 3 most important attributes for A and B and calculating score based on that
   compVals = []
-  for attr in allAttributes:
-    valA = attributePrefA[attr]/float(numRestauA)
-    valB = attributePrefB[attr]/float(numRestauB)
+  for attr, totalScore in allAttributes:
+    valA = attributePrefA[attr]
+    valB = attributePrefB[attr]
     if valB != 0 and valA != 0:
       comp = min(valA/float(valB), valB/float(valA))
       compVals.append(comp)
     # otherwise the comp will def be 0, in which case no need to add to the average
   # print 'compVals', compVals
   return np.mean(compVals)
-
-# calculate similarity of users based on how much they value a certain attribute in a restaurant
-def calculateAttrSim(node1, node2, restaurantSetA, restaurantSetB):
-  restaurantSetAll = set.union(restaurantSetA, restaurantSetB)
-  business_data = util.loadJSON('../yelp/restaurants.JSON')
-  # attributePref = {restauAttribute: [countA, countB], ... }
-  # positive are attributes that are true, i.e. customer is looking for
-  # negative are attributes that are false, i.e. customer does not care about
-  attributePrefPosA = Counter()
-  attributePrefNegA = Counter()
-  attributePrefPosB = Counter()
-  attributePrefNegB = Counter()  
-  numRestausWithPriceA = 0
-  numRestausWithPriceB = 0
-  # can use this to calculate average price range later
-  for business in business_data:
-    if business['business_id'] in restaurantSetAll:
-      attributeMap = business['attributes']
-      for attribute, val in attributeMap.items():
-        if type(val) == dict:
-          # iterate through the elements in this and pull out each attr/val
-          continue
-          # val = list(val.values())  #for cases like parking: {garage: True, street: true}, flattens into just a list of the values
-        if type(val) == str or type(val) == unicode:
-          continue
-        valList = [val]
-        if business['business_id'] in restaurantSetA:
-          attributePrefPosA[attribute] += sum(valList)  #sum of a list of bools = number of True vals for this attribute  (True = 1)
-          attributePrefNegA[attribute] += len(valList) - sum(valList)
-          if attribute == "Price Range":
-            numRestausWithPriceA += 1
-        if business['business_id'] in restaurantSetB:
-          attributePrefPosB[attribute] += sum(valList)
-          attributePrefNegB[attribute] += len(valList) - sum(valList)
-          if attribute == "Price Range":
-            numRestausWithPriceB += 1
-  # print 'ATTRIBUTES A', attributePrefPosA
-  # print 'ATTRIBUTES B', attributePrefPosB
-  # print 'numRestausWithPriceA', numRestausWithPriceA
-  # print 'numRestausWithPriceB', numRestausWithPriceB
-  # print 'NEG ATTRIBUTES A', attributePrefNegA
-  # print 'NEG ATTRIBUTES B', attributePrefNegB
-  # print restaurantSetA
-  # print restaurantSetB 
-  posCompScore = getAttrCompScore(attributePrefPosA, attributePrefPosB, len(restaurantSetA), len(restaurantSetB))
-  # print 'Compatibility Score:', posCompScore
-  return posCompScore
 
 # returns the similarity score between node1 and node2 based on the first part of our composite score formula (see Project Milestone)
 def calculateRatingSim(node1, node2):
@@ -138,19 +160,23 @@ def calculateRatingVals(userListMap):
 
   return ratingVals
 
+# @param: edgeVals = (node1ID, node2ID): score
 # create edge list given list of jaccard values for each pair of nodes
 def createFoodNetwork(edgeVals, user_map, edgesFile):
   file = open(edgesFile, "w")
+  count = 0
   for pair in edgeVals:
     val = edgeVals[pair] 
     # DECIDE WHAT SCORE THRESHOLD TO USE WHEN CREATING AN EDGE
     if val > 0:   #create an edge if jaccard val > 0 
-      # node1ID = pair[0]
-      # node2ID = pair[1]
-      node1ID = user_map[pair[0]]['node_id']
-      node2ID = user_map[pair[1]]['node_id']
+      node1ID = pair[0]
+      node2ID = pair[1]
+      # node1ID = user_map[pair[0]]['node_id']
+      # node2ID = user_map[pair[1]]['node_id']
       line = "{0} {1}\n".format(node1ID, node2ID)
       file.write(line)
+      count += 1
+  print 'number of edges with non-zero similarity', count
   file.close()
 
 # add meta data to the userListMap 
@@ -164,11 +190,13 @@ def main():
     userListMap[userID]['reviewMap'] = {} # create empty reviewMap for each user
   createMetaData(review_data, userListMap)
   print 'number of users', len(userListMap)
+  # print userListMap
   # print 'USER LIST MAP', userListMap
   # IMPLEMENT SCORE CALCULATION HERE: 
   edgeVals = {}  # {(node1ID, node2ID): jaccardSimValue}
   # node1 and node 2 are the user_id's
-  for node1 in userListMap.keys():
+  for index, node1 in enumerate(userListMap.keys()):
+    # print 'looking at {}th node with ID {}'.format(index, node1)
     restaurantSetA = set(userListMap[node1]['restaurantMap'].keys())
     if len(restaurantSetA) == 0:
       continue
@@ -188,17 +216,20 @@ def main():
         # pairValue = calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB)
         # 2) Attribute Vals
         # print 'PAIR IS', node1, node2        
-        pairValue = calculateAttrSim(userListMap[node1], userListMap[node2], restaurantSetA, restaurantSetB)
+        pairValue = getAttrCompScore(userListMap[node1], userListMap[node2])
         edgeVals[pair] = pairValue
+
   # edgeVals = calculateRatingVals(userListMap)
+  # print edgeVals
   print 'number of edges calculated', len(edgeVals)
 
-  # util.plotBucketDistribution(edgeVals)
   edgesFile = 'food_ntwk/attr_edge_list_100.txt'
   createFoodNetwork(edgeVals, userListMap, edgesFile)
   g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
   print 'num Nodes', g.GetNodes()
   print 'num Edges', g.GetEdges()
+  util.plotBucketDistribution(edgeVals)
+
 
 
 main()
