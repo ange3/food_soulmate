@@ -122,6 +122,7 @@ def calculateRatingSim(node1, node2):
   restaurantSet2 = set(node2['restaurantMap'].keys()) # all restaurants reviewed by user 2
 
   if len(restaurantSet1) == 0 or len(restaurantSet2) == 0: # if either user has not reviewed any restaurants
+    print 'should not print'
     return 0
 
   if len(set.intersection(restaurantSet1, restaurantSet2)) == 0: # no commonly reviewed restaurants
@@ -133,7 +134,7 @@ def calculateRatingSim(node1, node2):
         reviewSetA = node1['restaurantMap'][restaurantA] # node1's reviews of common restaurant
         reviewSetB = node2['restaurantMap'][restaurantA] # node2's reviews of common restaurant
         
-        latestDateA = latestDateB = datetime.datetime(2010, 1, 1)
+        latestDateA = latestDateB = datetime.datetime(2004, 1, 1)
         ratingA = 0.0
         ratingB = 0.0
 
@@ -229,7 +230,7 @@ def createEdgeVals(userListMap, isJaccardScore, isAttrScore, isRatingScore):
 '''
 def createFoodNetworkEdgeLists(userMapFile, reviewJSONFile, thresholdJaccard, thresholdRating, thresholdAttr, numUsers):
   userListMap = pickle.load( open( userMapFile, "rb" ) )
-  review_data = util.loadJSON('../yelp/reviews_by_1000_users.json')
+  review_data = util.loadJSON(reviewJSONFile)
 
   # 1) add meta-data
   for userID in userListMap.keys():
