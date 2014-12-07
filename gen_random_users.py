@@ -13,17 +13,17 @@ def loadJSON(fileName):
 # Creates a userListMap which maps from userID -> nodeID
 # userListMap is a table that allows us to easily index into the user_data (nodeID is the index)
 # Assumption: these users have been pre-checked to make sure they are good users (user_allgood.JSON was created in the better_users.py file)
-def createMap(user_data, numNodes):
-  print len(user_data)
+def createMap(user_data, numNodes, fullUserList):
   userListMap = {}
-  # good_data = []
   randomGroup = random.sample(user_data, numNodes)
+  
+  # NODE ID NUMBERING: 
+    # use index if you want to create consecutive node IDs from 0-numNodes
+    # use fullUserList[randomUserID]['node_id'] if you want to use original node ID numbering from full user map
   for index, randomUser in enumerate(randomGroup):
     randomUserID = str(randomUser['user_id'])
-    # print randomUserID
     userListMap[randomUserID] = {}
-    userListMap[randomUserID]['node_id'] = index
-    # good_data.append(randomUser)
+    userListMap[randomUserID]['node_id'] = fullUserList[randomUserID]['node_id']
 
   # Create new User JSON File
   newUserDataFile = "../yelp/user_{}_random.json".format(numNodes)
@@ -37,10 +37,9 @@ def createMap(user_data, numNodes):
 
 def genRandomUsers(numUsers):
   user_data = loadJSON("../yelp/user_allgood.json")
-  userListMap = createMap(user_data, numUsers)
+  fullUserList = pickle.load( open( "data/user_list_map.p", "rb" ) )
+  userListMap = createMap(user_data, numUsers, fullUserList)
   print 'num nodes in map', len(userListMap)
-  # print 'ORIGINAL USER LIST'
-  # print userListMap
 
   # Create pickle file
   pickleFile = "data/user_list_map_{}_random.p".format(numUsers)
@@ -51,8 +50,9 @@ def genRandomUsers(numUsers):
   userListMapLoaded = pickle.load( open( pickleFile, "rb" ) )
   if userListMapLoaded is not None:
     print 'sanity check: user list map loaded correctly with {} users'.format(len(userListMapLoaded))
-    # print 'NEW USER LIST'
-    # print userListMapLoaded
+    randUser = random.choice(userListMapLoaded.keys())
+    print 'user node ID in shortened user list', userListMapLoaded[randUser]['node_id']
+    print 'user node ID in full user list', fullUserList[randUser]['node_id']
 
 # returns a map of IDs of all food businesses
 def getFoodBusinessIDs(business_data):
@@ -96,4 +96,4 @@ def genReviews(userMapFile, numUsers):
   print 'valid json, new num reviews = ', len(updated_review_data)
 
 
-# genRandomUsers(1000)
+genRandomUsers(1000)
