@@ -1,6 +1,6 @@
 import gen_random_users as genUsers
 import gen_food_network as genFoodNet
-import gen_eval_network, util as genEvalNet
+import gen_eval_network as genEvalNet
 import json
 
 NUM_USERS = 1000
@@ -24,8 +24,10 @@ def main():
   thresholdAttr = 0
   genFoodNet.createFoodNetworkEdgeLists(userMapFile, userJSONFile, thresholdJaccard, thresholdRating, thresholdAttr, NUM_USERS)
 
-  # Create Eval Network
+  # Load Eval Network (entire graph)
+  # TO-DO
 
   # Calculate Accuracy
+  # TO-DO
 
 main()

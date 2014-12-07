@@ -51,5 +51,17 @@ def main():
   # step 2
   # snap.SaveEdgeList(g, "eval_ntwk/eval_ntwk_100.txt")
 
+# if necessary, this function can create an eval network based on number of users given
+def genEvalNetwork(numUsers): 
+  userMapFile = 'data/user_list_map_{}.p'.format(numUsers)
+  user_map = pickle.load(open(userMapFile,"rb"))
+  userJSONFile = '../yelp/user_{}.json'.format(numUsers)
+  user_data = load_data(userJSONFile, user_data)
+
+  # step 1
+  edgesFile = 'eval_ntwk/eval_ntwk_edge_list_{}.txt'.format(numUsers)
+  write_edges_file(user_data, user_map, edgesFile)
+
+
 if __name__ == '__main__':
   main()
