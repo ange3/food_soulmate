@@ -2,7 +2,7 @@ import snap, json, yaml
 # Yaml found here: http://pyyaml.org/wiki/PyYAML
 
 
-NUMNODES = 100
+NUMNODES = 30255
 # def populateIndices(foodCmtyV, evalCmtyV):
 
 def jaccard(cmty1, cmty2):
@@ -75,10 +75,10 @@ def generateEvalIndices(evalCmtyV):
 
 	return evalIndices
 
-def generateFoodIndices(foodCmtyV):
+def generateFoodIndices(foodCmtyV, nodelist):
 
 	#NEED TO GET RANDOM_SAMPLE
-	foodIndices = {x: -1 for x in random_sample}
+	foodIndices = {x: -1 for x in nodelist}
 
 	foodCmtyCount = len(foodCmtyV) #first unused cluster number in eval network
 
@@ -99,7 +99,7 @@ def outputCmtys(evalIndices):
 	json.dump(evalIndices, file)
 	file.close()
 
-def inputCmtys():
+def inputEvalCmtys():
 
 	file = open("../yelp/eval_network_communities.txt", "r")
 	evalIndicesUnicode = json.load(file)
@@ -151,9 +151,9 @@ def main():
 
 	#Output eval clusters for reading later
 	outputCmtys(evalIndices)
-	evalIndices = inputCmtys()
+	evalIndices = inputEvalCmtys()
 
 
 	
 
-main()
+#main()
