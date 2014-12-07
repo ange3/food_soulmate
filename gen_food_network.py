@@ -236,12 +236,12 @@ def main():
 	# print edgeVals
 	print 'number of edges calculated', len(edgeVals)
 
-	edgesFile = 'food_ntwk/attr_edge_list_1000.txt'
-	createFoodNetwork(edgeVals, userListMap, edgesFile)
-	g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
-	print 'num Nodes', g.GetNodes()
-	print 'num Edges', g.GetEdges()
-	util.plotBucketDistribution(edgeVals)
+  edgesFile = 'food_ntwk/attr_edge_list_1000_all.txt'
+  createFoodNetwork(edgeVals, userListMap, edgesFile)
+  g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
+  print 'num Nodes', g.GetNodes()
+  print 'num Edges', g.GetEdges()
+  util.plotBucketDistribution(edgeVals)
 
 
 
