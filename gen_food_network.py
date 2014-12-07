@@ -88,8 +88,6 @@ def createMetaData(review_data, userListMap):
 
 # returns the ratio of size of overlapping restaurants set / union of all restaurants
 def calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB):
-  if len(restaurantSetA) == 0 or len(restaurantSetB) == 0:
-    return 0
   # print 'restaurantSetA', restaurantSetA, len(restaurantSetA)
   # print 'restaurantSetB', restaurantSetB, len(restaurantSetB)
   intersectingSet = set.intersection(restaurantSetA, restaurantSetB)
@@ -160,13 +158,13 @@ def calculateRatingSim(node1, node2):
 
 # @param: edgeVals = (node1ID, node2ID): score
 # create edge list given list of jaccard values for each pair of nodes
-def createFoodNetwork(edgeVals, user_map, edgesFile):
+def createFoodNetwork(edgeVals, user_map, edgesFile, threshold):
   file = open(edgesFile, "w")
   count = 0
   for pair in edgeVals:
     val = edgeVals[pair] 
     # DECIDE WHAT SCORE THRESHOLD TO USE WHEN CREATING AN EDGE
-    if val > 0.8:   #create an edge if pair score > __
+    if val > threshold:   #create an edge if pair score > __
       node1ID = pair[0]
       node2ID = pair[1]
       # node1ID = user_map[pair[0]]['node_id']
@@ -246,11 +244,11 @@ def createFoodNetworkEdgeLists(userMapFile, reviewJSONFile, thresholdJaccard, th
 
   # 3) create food network for each score type
   jaccardNtwkFile = 'food_ntwk_random/jacc_edge_list_{}users_{}.txt'.format(numUsers, thresholdJaccard)
-  attrNtwkFile = 'food_ntwk_random/attr_edge_list_{}users_{}.txt'.format(numUsers, thresholdRating)
   ratiNtwkFile = 'food_ntwk_random/rati_edge_list_{}users_{}.txt'.format(numUsers, thresholdAttr)
-  createFoodNetwork(jaccardVals, userListMap, jaccardNtwkFile)
-  createFoodNetwork(attrVals, userListMap, attrNtwkFile)
-  createFoodNetwork(ratiVals, userListMap, ratiNtwkFile)
+  attrNtwkFile = 'food_ntwk_random/attr_edge_list_{}users_{}.txt'.format(numUsers, thresholdRating)
+  createFoodNetwork(jaccardVals, userListMap, jaccardNtwkFile, thresholdJaccard)
+  createFoodNetwork(ratiVals, userListMap, ratiNtwkFile, thresholdRating)
+  createFoodNetwork(attrVals, userListMap, attrNtwkFile, thresholdAttr)
 
   # 4) check if valid edge list and print info about each network
   g = snap.LoadEdgeList(snap.PUNGraph, jaccardNtwkFile, 0, 1)

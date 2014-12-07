@@ -11,7 +11,7 @@ def createNodeList(userMap):
   nodelist = []
   for key in userMap.keys():
     nodelist.append(userMap[key]['node_id'])
-  print nodelist
+  # print nodelist
 
 '''
 Generates a random sampling of good users given a sample size
@@ -47,7 +47,7 @@ def main():
 
   # 3) Load Eval Network (entire graph)
   # TO-DO
-  evalIndices = GNM.inputEvalCmtys()
+  # evalIndices = CNM.inputEvalCmtys()
   
 
   # 4) Calculate Accuracy
