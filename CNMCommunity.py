@@ -23,17 +23,22 @@ def generateIndices(foodCmtyV, evalCmtyV):
 	foodCmtyCount = len(foodCmtyV) #first unused cluster number in food network
 	evalCmtyCount = len(evalCmtyV) #first unused cluster number in eval network
 
+	print "Adding food indices"
 	for i in xrange(len(foodCmtyV)):
 		for NI in foodCmtyV[i]:
 			print "Current NID: %d" % NI
 			nodeIndices[NI][0] = i
 			print "NID: %d, Cluster: %d" % (NI, i)
 
+
+	print "Adding eval indices"
 	for i in xrange(len(evalCmtyV)):
 		for NI in evalCmtyV[i]:
 			nodeIndices[NI][1] = i
 			print "NID: %d, Food Cluster: %d, Eval Cluster: %d" % (NI, nodeIndices[NI][0], i)
 
+
+	print "Replacing -1s"
 	for i in xrange(NUMNODES):
 		if nodeIndices[i][0] == -1:
 			nodeIndices[i][0] = foodCmtyCount #set to next unused cluster
@@ -41,6 +46,7 @@ def generateIndices(foodCmtyV, evalCmtyV):
 		if nodeIndices[i][1] == -1:
 			nodeIndices[i][1] = evalCmtyCount #set to next unused cluster
 			evalCmtyCount += 1 #increment available cluster
+		print "NID: %d, Food Cluster: %d, Eval Cluster: %d" % (i, nodeIndices[i][0], nodeIndices[i][1])
 
 	return nodeIndices
 
@@ -71,9 +77,23 @@ def main():
 	nodeIndices = generateIndices(foodCmtyV, evalCmtyV)
 	jaccardSum = 0
 
+	numFoodCmtys = len(foodCmtyV)
+	numEvalCmtys = len(evalCmtyV)
 	for i in xrange(NUMNODES):
 		#Keep running total of jaccard scores
-		jaccardSum += jaccard(foodCmtyV[nodeIndices[i][0]], evalCmtyV[nodeIndices[i][1]])
+
+		if nodeIndices[i][0] >= numFoodCmtys:
+			#Not actually in the CmtyV, was manually indexed as its own cluster
+			foodCmtyToPass = [i]
+		else:
+			foodCmtyToPass = foodCmtyV[nodeIndices[i][0]]
+
+		if nodeIndices[i][1] >= numEvalCmtys:
+			evalCmtyToPass = [i]
+		else:
+			evalCmtyToPass = evalCmtyV[nodeIndices[i][1]]
+		#jaccardSum += jaccard(foodCmtyV[nodeIndices[i][0]], evalCmtyV[nodeIndices[i][1]])
+		jaccardSum += jaccard(foodCmtyToPass, evalCmtyToPass)
 
 	jaccardAverage = float(jaccardSum)/NUMNODES
 	print "Accuracy: %f" % jaccardAverage
