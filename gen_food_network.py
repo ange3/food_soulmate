@@ -7,6 +7,7 @@ import datetime
 
 # iterate through all reviews and add the business to the restauMap IF it is a food establishment
 # reviewMap: {reviewID: (star,date))}
+# reviewMap: {reviewID: rating}
 def createMetaData(review_data, userListMap):
   for review in review_data:
     userID = review['user_id']
@@ -93,8 +94,14 @@ def calculateAttrSim(node1, node2, restaurantSetA, restaurantSetB):
   return posCompScore
 
 # returns the similarity score between node1 and node2 based on the first part of our composite score formula (see Project Milestone)
-def calculateRatingSim(node1, node2, restaurantSet1, restaurantSet2):
+def calculateRatingSim(node1, node2):
   reviewScores = []
+  restaurantSet1 = set(node1['restaurantMap'].keys()) # all restaurants reviewed by user 1
+  restaurantSet2 = set(node2['restaurantMap'].keys()) # all restaurants reviewed by user 2
+
+  if len(restaurantSet1) == 0 or len(restaurantSet2) == 0: # if either user has not reviewed any restaurants
+    return 0
+
   if len(set.intersection(restaurantSet1, restaurantSet2)) == 0: # no commonly reviewed restaurants
     return 0
 
@@ -123,8 +130,8 @@ def calculateRatingSim(node1, node2, restaurantSet1, restaurantSet2):
         # score for this commonly reviewed restaurant
         score = (2.0 - abs(ratingA - ratingB))* math.pow( (abs(ratingA - 3.0) + abs(ratingB - 3.0)) / 2.0, 2.0 )
         reviewScores.append(score)
-  # print 'len: ',len(reviewScores)
-  # print 'compatibility_score: ',sum(reviewScores) / len(reviewScores) / 8.0 # divided by 8.0 so score is in the range [-1.0,1.0]
+  print 'len: ',len(reviewScores)
+  print 'compatibility_score: ',sum(reviewScores) / len(reviewScores) / 8.0
   compatibility_score = sum(reviewScores) / len(reviewScores) / 8.0
   return compatibility_score
 
@@ -141,7 +148,7 @@ def calculateRatingVals(userListMap):
       if pair not in ratingVals and pair2 not in ratingVals:# undirected graph
         ratingSimValue = calculateRatingSim(userListMap[node1ID], userListMap[node2ID])
         ratingVals[pair] = ratingSimValue
-
+        
   return ratingVals
 
 # create edge list given list of jaccard values for each pair of nodes
@@ -162,19 +169,18 @@ def createFoodNetwork(edgeVals, user_map, edgesFile):
 # add meta data to the userListMap 
 # for each node creates: restauMap
 def main():
-  userMapFile = "data/user_list_map_1000.p"
+  userMapFile = "data/user_list_map_100.p"
   userListMap = pickle.load( open( userMapFile, "rb" ) )
-  review_data = util.loadJSON('../yelp/reviews_by_1000_users.json')
+  review_data = util.loadJSON('../yelp/reviews_by_100_users.json')
   for userID in userListMap.keys():
     userListMap[userID]['restaurantMap'] = {}  # create empty restaurantMap for each user
     userListMap[userID]['reviewMap'] = {} # create empty reviewMap for each user
   createMetaData(review_data, userListMap)
   print 'number of users', len(userListMap)
   # print 'USER LIST MAP', userListMap
-  
   # IMPLEMENT SCORE CALCULATION HERE: 
   edgeVals = {}  # {(node1ID, node2ID): jaccardSimValue}
-  # node1 and node2 are the user_ids
+  # node1 and node 2 are the user_id's
   for node1 in userListMap.keys():
     restaurantSetA = set(userListMap[node1]['restaurantMap'].keys())
     if len(restaurantSetA) == 0:
@@ -195,16 +201,13 @@ def main():
         # pairValue = calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB)
         # 2) Attribute Vals
         # print 'PAIR IS', node1, node2        
-        # pairValue = calculateAttrSim(userListMap[node1], userListMap[node2], restaurantSetA, restaurantSetB)
-        # 3) Ratings Vals
-        pairValue = calculateRatingSim(userListMap[node1], userListMap[node2], restaurantSetA, restaurantSetB)
+        pairValue = calculateAttrSim(userListMap[node1], userListMap[node2], restaurantSetA, restaurantSetB)
         edgeVals[pair] = pairValue
+  # edgeVals = calculateRatingVals(userListMap)
   print 'number of edges calculated', len(edgeVals)
 
   # util.plotBucketDistribution(edgeVals)
-  # edgesFile = 'food_ntwk/attr_edge_list_1000.txt'
-  # edgesFile = 'food_ntwk/jacc_edge_list_1000.txt'
-  edgesFile = 'food_ntwk/rati_edge_list_1000.txt'
+  edgesFile = 'food_ntwk/attr_edge_list_100.txt'
   createFoodNetwork(edgeVals, userListMap, edgesFile)
   g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
   print 'num Nodes', g.GetNodes()
