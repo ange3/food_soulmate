@@ -166,7 +166,6 @@ def main():
   print 'number of users', len(userListMap)
   # print 'USER LIST MAP', userListMap
   # IMPLEMENT SCORE CALCULATION HERE: 
-<<<<<<< HEAD
   edgeVals = {}  # {(node1ID, node2ID): jaccardSimValue}
   # node1 and node 2 are the user_id's
   for node1 in userListMap.keys():
