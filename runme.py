@@ -23,7 +23,7 @@ def main():
   # 1) Generate Random User files and get path names
   genUsers.genRandomUsers(NUM_USERS)
   # userJSONFile = "../yelp/user_{}_random.json".format(NUM_USERS)
-  userMapFile = "data/user_list_map_{}_random.p".format(NUM_USERS)
+  userMapFile = "../yelp/user_list_map_{}_random.p".format(NUM_USERS)
   userMap = pickle.load( open( userMapFile, "rb" ) )
 
   nodelist = createNodeList(userMap)

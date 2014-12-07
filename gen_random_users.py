@@ -42,7 +42,7 @@ def genRandomUsers(numUsers):
   print 'num nodes in map', len(userListMap)
 
   # Create pickle file
-  pickleFile = "data/user_list_map_{}_random.p".format(numUsers)
+  pickleFile = "../yelp/user_list_map_{}_random.p".format(numUsers)
   pickle.dump( userListMap, open( pickleFile, "wb" ) )
   print 'created pickle file:', pickleFile
 
@@ -96,4 +96,4 @@ def genReviews(userMapFile, numUsers):
   print 'valid json, new num reviews = ', len(updated_review_data)
 
 
-genRandomUsers(1000)
+# genRandomUsers(1000)
