@@ -24,23 +24,21 @@ def goodUser(user):
 
 # Creates a userListMap which maps from userID -> nodeID
 # userListMap is a table that allows us to easily index into the user_data (nodeID is the index)
-def createMap(user_data, numNodes):
+def createMap(user_data, placeLimit, numNodes = 100):
   userListMap = {}
   good_data = []
-  userCount = 0
   for index, user in enumerate(user_data):
     userID = user['user_id']
     if goodUser(user):
       # userID = userID[2:] # strip beginning u' and ending ' that JSON file adds
       userListMap[userID] = {}
-      userListMap[userID]['node_id'] = userCount
+      userListMap[userID]['node_id'] = index
       good_data.append(user)
-      userCount += 1
-    if len(userListMap) >= numNodes:
-      break
+    if placeLimit:
+      if len(userListMap) >= numNodes:
+        break
 
-  # IF WE WANT TO CREATE A NEW USER JSON FILE:
-  newUserDataFile = "../../yelp/user_2.json"
+  newUserDataFile = "../../yelp/user.json"
 
   with open(newUserDataFile, 'w') as outfile:
     json.dump(good_data, outfile, sort_keys=True, indent=4)
@@ -53,13 +51,12 @@ def createMap(user_data, numNodes):
 
 def main():
   user_data = loadJSON()
-  userListMap = createMap(user_data, 2)
+  userListMap = createMap(user_data, False)
+  # userListMap = createMap(user_data, True, 1000)
   print 'num nodes in map', len(userListMap)
-  pickleFile = "user_list_map_2.p"
+  pickleFile = "user_list_map.p"
   pickle.dump( userListMap, open( pickleFile, "wb" ) )
   print 'created pickle file:', pickleFile
-  # userListMapLoaded = pickle.load( open( pickleFile, "rb" ) )
-  # print userListMapLoaded['-jNc1Ko1rHhlibmmy3U7Pw']
 
 
 main()

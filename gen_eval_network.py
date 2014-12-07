@@ -20,8 +20,9 @@ def write_edges_file(user_data, user_map, edgesFile):
 
   for i in xrange(len(user_data)):
     friend_list.append(user_data[i]['friends'])
+    print friend_list[i]
     for j in xrange(len(friend_list[i])):
-      if friend_list[i][j] in user_map: # if user should be in the network
+      if friend_list[i][j] in user_map.keys(): # if user should be in the network
         src_tmp = user_map[user_data[i]['user_id']] # not quite sure what data type this return value is, but it's converted to string 
         dst_tmp = user_map[friend_list[i][j]]       # not quite sure what data type this return value is, but it's converted to string 
         src = str(src_tmp)[12:-1] # extract node_id for src of edge
@@ -31,10 +32,10 @@ def write_edges_file(user_data, user_map, edgesFile):
   file.close()
 
 def main(): 
-  edgesFile = 'eval_ntwk/eval_ntwk_edge_list_100.txt'
-  userMapFile = 'data/user_list_map_100.p'
+  edgesFile = 'eval_ntwk/eval_ntwk_edge_list_1000.txt'
+  userMapFile = 'data/user_list_map_1000.p'
   user_data = []
-  user_data = load_data('../yelp/user_100.json', user_data)
+  user_data = load_data('../yelp/user_1000.json', user_data)
 
   # step 1
   g = snap.TUNGraph.New()
@@ -47,9 +48,9 @@ def main():
   # step 2
   # g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
   # step 2
-  # snap.PrintInfo(g, "Evaluation Network Info", "eval_ntwk/eval_netwk_info_100.txt", False)
+  # snap.PrintInfo(g, "Evaluation Network Info", "eval_ntwk/eval_netwk_info_1000.txt", False)
   # step 2
-  # snap.SaveEdgeList(g, "eval_ntwk/eval_ntwk_100.txt")
+  # snap.SaveEdgeList(g, "eval_ntwk/eval_ntwk_1000.txt")
 
 if __name__ == '__main__':
   main()
