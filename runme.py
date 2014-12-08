@@ -2,14 +2,14 @@ import gen_random_users as genUsers
 import gen_food_network as genFoodNet
 import gen_eval_network as genEvalNet
 import CNMCommunity as CNM
-<<<<<<< HEAD
 import gen_eval_clusters_toImport as genEvalClst
-=======
->>>>>>> ecea80a8600e0f383ca926397765b40a81e98063
 import json, pickle, snap
+import numpy as np
 
 NUM_USERS = 1000
-
+jaccardAccuracies = []
+attrAccuracies = []
+ratiAccuracies = []
 
 def createNodeList(userMap):
   nodelist = []
@@ -24,7 +24,7 @@ Creates 3 food networks based on three score types
 Create eval network to test food networks against
 Calculates accuracy of each food network vs eval network
 '''
-def main():
+def runTrial(evalIndices, clusterDict):
   # 1) Generate Random User files and get path names
   genUsers.genRandomUsers(NUM_USERS)
   # userJSONFile = "../yelp/user_{}_random.json".format(NUM_USERS)
@@ -53,11 +53,14 @@ def main():
   # 3) Load Eval Network (entire graph)
   # -----------------------------------
 
+  # Defer to prior to for loop
+
   # Retrieves a dictionary of NID:Cluster on the entire eval network
-  evalIndices = genEvalClst.inputEvalCmtys()
+  #evalIndices = genEvalClst.inputEvalCmtys()
 
   # Computes a dictionary of Cluster Number:NIDs on the entire eval network
-  clusterDict = genEvalClst.createClusterDict(evalIndices)
+  #clusterDict = genEvalClst.createClusterDict(evalIndices)
+  
 
   
 
@@ -89,6 +92,48 @@ def main():
   print "Attribute accuracy: %f" % attrAccuracy
   print "Rating accuracy: %f" % ratiAccuracy
 
+  # Push to vectors
+  jaccardAccuracies.append(jaccardAccuracy)
+  attrAccuracies.append(attrAccuracy)
+  ratiAccuracies.append(ratiAccuracy)
 
+def main():
+  # Retrieves a dictionary of NID:Cluster on the entire eval network
+  evalIndices = genEvalClst.inputEvalCmtys()
+
+  # Computes a dictionary of Cluster Number:NIDs on the entire eval network
+  clusterDict = genEvalClst.createClusterDict(evalIndices)
+
+  for i in xrange(100):
+    runTrial(evalIndices, clusterDict)
+
+  output = {"Jaccard":jaccardAccuracies, "Attribute":attrAccuracies, "Rating":ratiAccuracies}
+
+  jaccardStats = {"JaccMean":np.mean(jaccardAccuracies), "JaccMedian":np.median(jaccardAccuracies), "JaccMin":np.amin(jaccardAccuracies), "Jacc25%":np.percentile(jaccardAccuracies,25), "Jacc75%":np.percentile(jaccardAccuracies,75), "JaccMax":np.amax(jaccardAccuracies), "JaccStdev":np.std(jaccardAccuracies), "JaccVar":np.var(jaccardAccuracies),}
+  attrStats = {"AttrMean":np.mean(attrAccuracies), "AttrMedian":np.median(attrAccuracies), "AttrMin":np.amin(attrAccuracies), "Attr25%":np.percentile(attrAccuracies,25), "Attr75%":np.percentile(attrAccuracies,75), "AttrMax":np.amax(attrAccuracies),"AttrStdev":np.std(attrAccuracies), "AttrVar":np.var(attrAccuracies)}
+  ratiStats = {"RatiMean":np.mean(ratiAccuracies), "RatiMedian":np.median(ratiAccuracies), "RatiMin":np.amin(ratiAccuracies), "Rati25%":np.percentile(ratiAccuracies,25), "Rati75%":np.percentile(ratiAccuracies,75), "RatiMax":np.amax(ratiAccuracies), "RatiStdev":np.std(ratiAccuracies), "RatiVar":np.var(ratiAccuracies)}
+
+  file = open("output_data.txt", "w")
+  json.dump(jaccardStats, file, sort_keys=True, indent=4)
+  file.write("\n")
+  json.dump(attrStats, file, sort_keys=True, indent=4)
+  file.write("\n")
+  json.dump(ratiStats, file, sort_keys=True, indent=4)
+  file.write("\n")
+  json.dump(output, file, sort_keys=True)
+  file.close()
+
+  file2 = open("output_data_backup.txt", "w")
+  file2.write(repr(jaccardAccuracies))
+  file2.write(repr(attrAccuracies))
+  file2.write(repr(ratiAccuracies))
+  file2.close()
+
+  print "Jaccard accuracies"
+  print jaccardAccuracies
+  print "Attribute accuracies"
+  print attrAccuracies
+  print "Rating accuracies"
+  print ratiAccuracies
 
 main()

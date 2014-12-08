@@ -145,7 +145,7 @@ def calculateAccuracy(foodCmtyV, foodIndices, evalClusterDict, evalIndices, node
 
 
 
-#def main():
+#def main():`
 	# foodEdgesFile = 'food_ntwk/rati_edge_list_1000_threshold2.txt'
 	# foodGraph = snap.LoadEdgeList(snap.PUNGraph, foodEdgesFile, 0, 1)
 
