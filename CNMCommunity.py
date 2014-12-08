@@ -1,4 +1,4 @@
-import snap, json, yaml
+import snap, json
 # Yaml found here: http://pyyaml.org/wiki/PyYAML
 
 

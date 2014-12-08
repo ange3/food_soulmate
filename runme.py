@@ -2,7 +2,10 @@ import gen_random_users as genUsers
 import gen_food_network as genFoodNet
 import gen_eval_network as genEvalNet
 import CNMCommunity as CNM
+<<<<<<< HEAD
 import gen_eval_clusters_toImport as genEvalClst
+=======
+>>>>>>> ecea80a8600e0f383ca926397765b40a81e98063
 import json, pickle, snap
 
 NUM_USERS = 1000
@@ -55,6 +58,7 @@ def main():
 
   # Computes a dictionary of Cluster Number:NIDs on the entire eval network
   clusterDict = genEvalClst.createClusterDict(evalIndices)
+
   
 
   # 4) Calculate Accuracy
