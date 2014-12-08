@@ -2,7 +2,8 @@ import gen_random_users as genUsers
 import gen_food_network as genFoodNet
 import gen_eval_network as genEvalNet
 import CNMCommunity as CNM
-import json, pickle
+import gen_eval_clusters_toImport as genEvalClst
+import json, pickle, snap
 
 NUM_USERS = 1000
 
@@ -11,7 +12,8 @@ def createNodeList(userMap):
   nodelist = []
   for key in userMap.keys():
     nodelist.append(userMap[key]['node_id'])
-  print nodelist
+  # print nodelist
+  return nodelist
 
 '''
 Generates a random sampling of good users given a sample size
@@ -46,11 +48,43 @@ def main():
   ratiGraph = snap.LoadEdgeList(snap.PUNGraph, ratiNtwkFile, 0, 1)
 
   # 3) Load Eval Network (entire graph)
-  # TO-DO
-  evalIndices = GNM.inputEvalCmtys()
+  # -----------------------------------
+
+  # Retrieves a dictionary of NID:Cluster on the entire eval network
+  evalIndices = genEvalClst.inputEvalCmtys()
+
+  # Computes a dictionary of Cluster Number:NIDs on the entire eval network
+  clusterDict = genEvalClst.createClusterDict(evalIndices)
   
 
   # 4) Calculate Accuracy
-  # TO-DO
+  # ---------------------
+
+  # Initialize community vectors
+  jaccardCmtyV = snap.TCnComV()
+  attrCmtyV = snap.TCnComV()
+  ratiCmtyV = snap.TCnComV()
+
+  # Get modularities, populate community vectors
+  jaccardMod = snap.CommunityCNM(jaccardGraph, jaccardCmtyV)
+  attrMod = snap.CommunityCNM(attrGraph, attrCmtyV)
+  ratiMod = snap.CommunityCNM(ratiGraph, ratiCmtyV)
+
+  # Generate indices for each community
+  jaccardIndices = CNM.generateFoodIndices(jaccardCmtyV, nodelist)
+  attrIndices = CNM.generateFoodIndices(attrCmtyV, nodelist)
+  ratiIndices = CNM.generateFoodIndices(ratiCmtyV, nodelist)
+
+  # Calculate accuracies
+  jaccardAccuracy = CNM.calculateAccuracy(jaccardCmtyV, jaccardIndices, clusterDict, evalIndices, nodelist)
+  attrAccuracy = CNM.calculateAccuracy(attrCmtyV, attrIndices, clusterDict, evalIndices, nodelist)
+  ratiAccuracy = CNM.calculateAccuracy(ratiCmtyV, ratiIndices, clusterDict, evalIndices, nodelist)
+
+  # Print!
+  print "Jaccard accuracy: %f" % jaccardAccuracy
+  print "Attribute accuracy: %f" % attrAccuracy
+  print "Rating accuracy: %f" % ratiAccuracy
+
+
 
 main()

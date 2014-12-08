@@ -2,13 +2,18 @@ import snap, json, yaml
 # Yaml found here: http://pyyaml.org/wiki/PyYAML
 
 
-NUMNODES = 30255
+#NUMNODES = 30255
+NUMNODES = 1000
 # def populateIndices(foodCmtyV, evalCmtyV):
 
-def jaccard(cmty1, cmty2):
+def jaccard(cmty1, cmty2, nodelist):
+	#print "Cmty 1: %d" % len(cmty1)
+	#print "Cmty 2: %d" % len(cmty2)
+	#print "Nodelist"
+	#print nodelist
 	setA = set(cmty1)
 	setB = set(cmty2)
-	random_sample_set = set(RANDOM_SAMPLE)
+	random_sample_set = set(nodelist)
 	if len(setA) == 0 or len(setB) == 0:
 		return 0
 	# print 'setA', setA, len(setA)
@@ -16,7 +21,7 @@ def jaccard(cmty1, cmty2):
 	intersectingSet = set.intersection(setA, setB)
 	intersectingSet = set.intersection(intersectingSet, random_sample_set)
 	unionSet = set.union(setA, setB)
-	unionSet = set.intersection(intersectingSet, random_sample_set)
+	unionSet = set.intersection(unionSet, random_sample_set)
 	ratio = float(len(intersectingSet))/len(unionSet)
 	# print ratio
 	return ratio
@@ -83,10 +88,15 @@ def generateFoodIndices(foodCmtyV, nodelist):
 	foodCmtyCount = len(foodCmtyV) #first unused cluster number in eval network
 
 	print "Adding food indices"
-	for i in xrange(len(evalCmtyV)):
-		for NI in evalCmtyV[i]:
-			evalIndices[NI] = i
-			print "NID: %d, Food Cluster: %d" % (NI, i)
+	for i in xrange(len(foodCmtyV)):
+		for NI in foodCmtyV[i]:
+			foodIndices[NI] = i
+			#print "NID: %d, Food Cluster: %d" % (NI, i)
+
+	for i in nodelist:
+		if foodIndices[i] == -1:
+			foodIndices[i] = foodCmtyCount
+			foodCmtyCount += 1
 
 	return foodIndices
 
@@ -109,49 +119,78 @@ def inputEvalCmtys():
 		evalIndices[i] = evalIndicesUnicode[repr(i)]
 	file.close()
 
-def main():
-	foodEdgesFile = 'food_ntwk/rati_edge_list_1000_threshold2.txt'
-	foodGraph = snap.LoadEdgeList(snap.PUNGraph, foodEdgesFile, 0, 1)
-
-	evalEdgesFile = 'eval_ntwk/eval_ntwk_edge_list_100.txt'
-	evalGraph = snap.LoadEdgeList(snap.PUNGraph, evalEdgesFile, 0, 1)
-
-	foodCmtyV = snap.TCnComV()
-	evalCmtyV = snap.TCnComV()
-
-	#foodMod = snap.CommunityCNM(foodGraph, foodCmtyV)
-	evalMod = snap.CommunityCNM(evalGraph, evalCmtyV)
-
-	evalIndices = generateEvalIndices(evalCmtyV)
-
-	#Generate map of indices of each node within each community vector
-	nodeIndices = generateIndices(foodCmtyV, evalCmtyV)
-	jaccardSum = 0
-
+def calculateAccuracy(foodCmtyV, foodIndices, evalClusterDict, evalIndices, nodelist):
 	numFoodCmtys = len(foodCmtyV)
-	numEvalCmtys = len(evalCmtyV)
-	for i in xrange(NUMNODES):
-		#Keep running total of jaccadr scores
 
-		if nodeIndices[i][0] >= numFoodCmtys:
+	runningJScore = 0
+
+	for i in nodelist:
+		if foodIndices[i] >= numFoodCmtys:
 			#Not actually in the CmtyV, was manually indexed as its own cluster
 			foodCmtyToPass = [i]
 		else:
-			foodCmtyToPass = foodCmtyV[nodeIndices[i][0]]
+			foodCmtyToPass = foodCmtyV[foodIndices[i]]
 
-		if nodeIndices[i][1] >= numEvalCmtys:
-			evalCmtyToPass = [i]
-		else:
-			evalCmtyToPass = evalCmtyV[nodeIndices[i][1]]
-		#jaccardSum += jaccard(foodCmtyV[nodeIndices[i][0]], evalCmtyV[nodeIndices[i][1]])
-		jaccardSum += jaccard(foodCmtyToPass, evalCmtyToPass)
+		evalCmtyToPass = evalClusterDict[evalIndices[i]]
+		#print "NID: %d, Cluster index: %d," % (i, evalIndices[i])
+		currJaccard = jaccard(foodCmtyToPass, evalCmtyToPass, nodelist)
+		#print "Curr %f" % currJaccard
+		runningJScore += currJaccard
 
-	jaccardAverage = float(jaccardSum)/NUMNODES
+	jaccardAverage = float(runningJScore)/len(nodelist)
 	print "Accuracy: %f" % jaccardAverage
 
-	#Output eval clusters for reading later
-	outputCmtys(evalIndices)
-	evalIndices = inputEvalCmtys()
+
+	return jaccardAverage
+
+
+
+#def main():
+	# foodEdgesFile = 'food_ntwk/rati_edge_list_1000_threshold2.txt'
+	# foodGraph = snap.LoadEdgeList(snap.PUNGraph, foodEdgesFile, 0, 1)
+
+	# evalEdgesFile = 'eval_ntwk/eval_ntwk_edge_list_1000.txt'
+	# evalGraph = snap.LoadEdgeList(snap.PUNGraph, evalEdgesFile, 0, 1)
+
+	# foodCmtyV = snap.TCnComV()
+	# evalCmtyV = snap.TCnComV()
+
+	# #foodMod = snap.CommunityCNM(foodGraph, foodCmtyV)
+	# #evalMod = snap.CommunityCNM(evalGraph, evalCmtyV)
+
+	# evalIndices = generateEvalIndices(evalCmtyV)
+
+	# #Generate map of indices of each node within each community vector
+	# #nodeIndices = generateIndices(foodCmtyV, evalCmtyV)
+	# nodeIndices = generateFoodIndices(foodCmtyV, xrange(NUMNODES))
+	# jaccardSum = 0
+
+	# numFoodCmtys = len(foodCmtyV)
+	# numEvalCmtys = len(evalCmtyV)
+	# for i in xrange(NUMNODES):
+	# 	#Keep running total of jaccadr scores
+
+	# 	if nodeIndices[i] >= numFoodCmtys:
+	# 		#Not actually in the CmtyV, was manually indexed as its own cluster
+	# 		foodCmtyToPass = [i]
+	# 	else:
+	# 		foodCmtyToPass = foodCmtyV[nodeIndices[i]]
+
+	# 	if nodeIndices[i][1] >= numEvalCmtys:
+	# 		evalCmtyToPass = [i]
+	# 	else:
+	# 		evalCmtyToPass = evalCmtyV[evalIndices[i]]
+	# 	#jaccardSum += jaccard(foodCmtyV[nodeIndices[i][0]], evalCmtyV[nodeIndices[i][1]])
+	# 	jaccardSum += jaccard(foodCmtyToPass, evalCmtyToPass)
+
+	# jaccardAverage = float(jaccardSum)/NUMNODES
+	# print "Accuracy: %f" % jaccardAverage
+
+	# #Output eval clusters for reading later
+	# outputCmtys(evalIndices)
+	# evalIndices = inputEvalCmtys()
+
+
 
 
 	

@@ -51,6 +51,8 @@ def createClusterDict(evalIndices):
 			clusterDict[evalIndices[NID]] = [NID]
 		else:
 			clusterDict[evalIndices[NID]].append(NID)
+	#print clusterDict
+	return clusterDict
 
 def main():
 	evalEdgesFile = 'eval_ntwk/eval_edge_list_phoenix.txt'
