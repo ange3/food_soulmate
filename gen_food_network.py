@@ -77,6 +77,7 @@ def calculateAttrPref(node, restaurantSet, business_data):
 Note: restaurants that are added to the restaurantMap are only food establishments because the reviews.JSON file is pre-screened to only include reviews made for a restaurant 
 '''
 def createMetaData(review_data, userListMap):
+  globalBusinessMap = {}
   for review in review_data:
     userID = review['user_id']
     if userID in userListMap:
@@ -86,6 +87,16 @@ def createMetaData(review_data, userListMap):
         userListMap[userID]['restaurantMap'][businessID] = []
       userListMap[userID]['restaurantMap'][businessID].append(reviewID)
       userListMap[userID]['reviewMap'][reviewID] = (review['stars'], review['date'])
+    if businessID not in globalBusinessMap.keys():
+      globalBusinessMap[businessID] = [userID]
+      print 'business added!'
+    elif userID not in globalBusinessMap[businessID]:
+      globalBusinessMap[businessID].append(userID)
+      print 'user added!'
+  
+  business_map_file = open('globalBusinessMap.json', 'w')
+  json.dump(globalBusinessMap, business_map_file, indent=4)
+  business_map_file.close()
 
   business_data = util.loadJSON('../yelp/restaurants.JSON')
   for user_id, user in userListMap.items():
