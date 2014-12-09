@@ -98,9 +98,11 @@ def oneTimeInit():
 
 	return ratingEdgeList, userMap
 
+
 def runTrial(ratingEdgeList, userMap):	
 	thresholdVals = [0.0] * NUM_THRESHOLD_VALS
 	attrEdgeList = {}
+	thresholdData = {}
 
 	for i in xrange(NUM_THRESHOLD_VALS):
 		thresholdVals[i] = (i + 1) * 0.1 # [0.1, 0.2, 0.3, 0.4, 0.5] as test values for threshold
@@ -108,13 +110,16 @@ def runTrial(ratingEdgeList, userMap):
 
 	print 'Selecting 1000 random edges from ratingEdgeList...'
 	randomEdges = []
-	while len(randomEdges) < 1000: # want 1000 random edges 
-		rand_edge = random.choice(ratingEdgeList) # randomly select 1000 edges from ratingEdgeList
-		if rand_edge not in randomEdges:
-			randomEdges.append(rand_edge)
+	# while len(randomEdges) < 1000: # want 1000 random edges 
+	# 	rand_edge = random.choice(ratingEdgeList) # randomly select 1000 edges from ratingEdgeList
+	# 	if rand_edge not in randomEdges:
+	# 		randomEdges.append(rand_edge)
+	sample_size = 1000
+	randomEdges = random.sample(randomEdgeList, sample_size)
 
 	for thresholdVal in thresholdVals: # for each potential threshold
 		print 'Calculating Attr Comp Scores for thresholdVal: ',thresholdVal,'...'
+		correct = 0
 		for edge in randomEdges:
 			user1ID = ''
 			user2ID = ''
@@ -127,21 +132,21 @@ def runTrial(ratingEdgeList, userMap):
 			user2 = userMap[user2ID]
 			attrCompScore = gen_food_network.getAttrCompScore(user1, user2)
 			# print 'Attr Comp Score for ',edge,' is: ',attrCompScore
-			if (attrCompScore > thresholdVal):
+			if attrCompScore > thresholdVal: # Draw edge in the Attribute Similarity network
 				attrEdgeList[thresholdVal].append([edge[0], edge[1], attrCompScore])
-	
-	# Randomly select 1000 edges from ratingEdgeList (Blanca)
-		# For each potential threshold
-			# Calculate attribute score (Blanca)
+				if edge[2] > 0: # Edge exists in Rating Similarity Network
+					correct += 1 # Hit
+			else: # No edge in the Attribute Similarity network
+				if edge[2] <= 0: # No edge in Rating Similarity Network
+					correct += 1 # Correct rejection
+		thresholdData[thresholdVal] = {"Correct":correct, "Accuracy":correct/1000}
 
-			# Store into list of [NID, NID, Attribute Score]
-
-		# Classify edges in list (Larry)
-
-		# Calculate accuracy of attribute classifications (Larry)
+	return attrEdgeList, thresholdData
 
 def main():
 	# Initialize business data (happens once) (Blanca)
+
+	##################################COMMENT THIS OUT AFTER RUNNING IT ONE TIME#########################################
 	print 'running oneTimeInit...'
 	ratingEdgeList, userMap = oneTimeInit()
 
@@ -151,6 +156,8 @@ def main():
 	# Find potential threshold that yields maximum accuracy (Larry)
 
 	# Generate the (<30255)-complete graph using attribute scores with that threshold (expensive)
+
+	# Get the clustering of the (<30255)-complete graph using CNM (expensive)
 
 	# Compare clusters on the (<30255)-complete graph against true friends.
 		# Recommend any members of node's cluster that isn't a friend.
