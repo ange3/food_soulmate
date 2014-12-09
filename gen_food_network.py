@@ -59,6 +59,7 @@ def calculateAttrPref(node, restaurantSet, business_data):
     attributePrefNeg[attr] = score
 
   node['attributePosPrefCounter'] = attributePrefPos
+  print "Positive: %s" % attributePrefPos
   node['attributeNegPrefCounter'] = attributePrefNeg
   if numRestausWithPrice != 0:
     node['avgPriceRange'] = attributePrefPos['Price Range']/float(numRestausWithPrice)
@@ -89,10 +90,10 @@ def createMetaData(review_data, userListMap):
       userListMap[userID]['reviewMap'][reviewID] = (review['stars'], review['date'])
     if businessID not in globalBusinessMap.keys():
       globalBusinessMap[businessID] = [userID]
-      print 'business added!'
+      #print 'business added!'
     elif userID not in globalBusinessMap[businessID]:
       globalBusinessMap[businessID].append(userID)
-      print 'user added!'
+      #print 'user added!'
   
   user_map_file = open('userMap.json', 'w')
   json.dump(userListMap, user_map_file, indent=4)

@@ -115,18 +115,19 @@ def oneTimeInit():
 
 #def runTrial(ratingEdgeList, userMap):
 def runTrial():	
-	thresholdVals = [0.0] * NUM_THRESHOLD_VALS
+	#thresholdVals = [0.0] * NUM_THRESHOLD_VALS
+	thresholdVals = [0, 0.005, 0.01, 0.015, 0.02, 0.0025, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5]
 	thresholdData = {}
 
-	review_data = util.loadJSON('../yelp/review.json')
-	userMapFile = "data/user_list_map_phoenix_friendsAndReview.p"
-	userMapToDump = pickle.load( open( userMapFile, "rb" ) )
-	for userID in userMap.keys():
-		userMap[userID]['restaurantMap'] = {}
-		userMap[userID]['reviewMap'] = {}
+	# review_data = util.loadJSON('../yelp/review.json')
+	# userMapFile = "data/user_list_map_phoenix_friendsAndReview.p"
+	# userMapToDump = pickle.load( open( userMapFile, "rb" ) )
+	# for userID in userMapToDump.keys():
+	# 	userMapToDump[userID]['restaurantMap'] = {}
+	# 	userMapToDump[userID]['reviewMap'] = {}
 
-	# print 'Generating MetaData...'
-	gen_food_network.createMetaData(review_data, userMapToDump) # this step takes some time (~2 mins)
+	# # print 'Generating MetaData...'
+	# gen_food_network.createMetaData(review_data, userMapToDump) # this step takes some time (~2 mins)
 
 	userMap = importJsonUM()
 	globalBusinessMap = importJsonGBM()
@@ -134,8 +135,8 @@ def runTrial():
 
 	nodeToUserIDMap = createNodeToUserIDMap(userMap)
 
-	for i in xrange(NUM_THRESHOLD_VALS):
-		thresholdVals[i] = i * 0.02 # [0.1, 0.2, 0.3, 0.4, 0.5] as test values for threshold
+	#for i in xrange(NUM_THRESHOLD_VALS):
+		#thresholdVals[i] = i * 0.01 # [0.1, 0.2, 0.3, 0.4, 0.5] as test values for threshold
 
 	print 'Selecting 1000 random edges from ratingEdgeList...'
 	sample_size = 10
@@ -149,6 +150,7 @@ def runTrial():
 		pair = frozenset(random.sample(globalBusinessMap[business], 2))
 		#nodeIDpair = frozenset([ nodeToUserIDMap[pair[0]], nodeToUserIDMap[pair[1]] ])
 		userID1, userID2 = pair
+		pair = frozenset([str(userID1), str(userID2)])
 		ratingScore = gen_food_network.calculateRatingSimForBusiness(userMap[userID1], userMap[userID2], business)
 		attrScore = gen_food_network.getAttrCompScore(userMap[userID1], userMap[userID2])
 		print "Rating score: %f, Attr score: %f" % (ratingScore, attrScore)
@@ -165,7 +167,17 @@ def runTrial():
 			if correct:
 				correctCount += 1
 		print "Correctly classified: %d" % correctCount
+		if correctCount > highestAccuracy:
+			highestAccuracy = correctCount
+			highestAccuracyThreshold = threshold
 		thresholdScore[threshold] = correctCount
+
+	print "Print highestAccuracy: %f" % float(highestAccuracy)/1000
+	print "Threshold with highestAccuracy: %f" % highestAccuracyThreshold
+
+	thresholdScoresFile.open("thresholdScores", "w")
+	json.dump(thresholdScore, thresholdScoresFile, indent=4)
+	thresholdScoresFile.close()
 
 
 
