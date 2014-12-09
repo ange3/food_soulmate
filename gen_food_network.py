@@ -157,7 +157,7 @@ def calculateRatingSim(node1, node2):
             ratingB = node2['reviewMap'][reviewID][0]
 
         # score for this commonly reviewed restaurant
-        score = (2.0 - abs(ratingA - ratingB))* math.pow( (abs(ratingA - 3.0) + abs(ratingB - 3.0)) / 2.0, 2.0 )
+        score = (2.0 - abs(ratingA - ratingB)) * ( math.pow(abs(ratingA - 3.0), 2.0) + math.pow(abs(ratingB - 3.0), 2.0) ) / 2.0
         reviewScores.append(score)
   # print 'len: ',len(reviewScores)
   # print 'compatibility_score: ',sum(reviewScores) / len(reviewScores) / 8.0
