@@ -31,6 +31,10 @@ def oneTimeInit():
 	ratingEdgeList = []
 	ratingsMap = {}
 
+	#
+	# don't need the below commented out code because we have some JSON files!
+	#
+
 	# review_data = util.loadJSON('../yelp/review.json')
 	# userMapFile = "data/user_list_map_phoenix_atLeastOneReview.p"
 	# userMap = pickle.load( open( userMapFile, "rb" ) )
@@ -57,15 +61,19 @@ def oneTimeInit():
 				pair = frozenset([userID1, userID2])
 				if pair not in ratingsMap.keys():
 					ratingsMap[pair] = ratingScore
-				ratingsMap[pair] += ratingScore
+				else: 
+					ratingsMap[pair] += ratingScore
 
 	edgesFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenixRatingScoreOnly.txt'
 	edgesWithScoreFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenixRatingScoreOnly_wScores.txt'
 	file = open(edgesFile, "w")
 	file2 = open(edgesWithScoreFile, "w")
 
+	print 'Writing the Edge List...'
 	for pair in ratingsMap:
 		key1, key2 = pair
+		print 'pair: ',pair
+		print 'value: ',ratingsMap[pair]
 		if ratingsMap[pair] > 0.0: 
 			line = "{0} {1}\n".format(userMap[key1]['node_id'], userMap[key2]['node_id']) 
 			lineWithScore = "{0} {1} {2}\n".format(userMap[key1]['node_id'], userMap[key2]['node_id'], ratingsMap[pair])
@@ -74,24 +82,6 @@ def oneTimeInit():
 			newEdge = userMap[key1]['node_id'], userMap[key2]['node_id']
 			print 'newEdge: ',newEdge
 			ratingEdgeList.append(newEdge)
-
-	# for key1 in userMap.keys(): # iterates over all the node IDs that can be in the network ~70k
-	# 	for key2 in userMap.keys():
-	# 		if key1 == key2: 
-	# 			continue
-			
-	# 		ratingScore = gen_food_network.calculateRatingSim(userMap[key1], userMap[key2]) 
-
-	# 		if ratingScore > 0.0: 
-	# 			line = "{0} {1}\n".format(userMap[key1]['node_id'], userMap[key2]['node_id']) 
-	# 			lineWithScore = "{0} {1} {2}\n".format(userMap[key1]['node_id'], userMap[key2]['node_id'], ratingScore) 
-	# 			file.write(line)
-	# 			file2.write(lineWithScore)
-	# 			newEdge = userMap[key1]['node_id'], userMap[key2]['node_id']
-	# 			print 'newEdge: ',newEdge
-	# 			ratingEdgeList.append(newEdge)
-	# 		else:
-	# 			print 'no edge created here...'
 	
 	file.close()
 	file2.close()
