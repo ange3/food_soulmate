@@ -1,4 +1,4 @@
-import json, math
+import json, math, operator
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -19,23 +19,30 @@ def loadJSON(fileName):
     where 0 <= similarityValue <= 1
   @return: None
 '''
-def plotBucketDistribution(edgeVals, scoreType, numUsers):
+def plotBucketDistribution(edgeVals, scoreType, numUsers, minX, maxX):
+  xstep = abs(maxX-minX)/float(100)
   valsList = [edgeVals[key] for key in edgeVals if edgeVals[key] != 0]
   buckets = [0] * 101
   for val in valsList:
     if not math.isnan(val):
       index = math.ceil(val*100)
       buckets[int(index)] += 1
-  print buckets
-  x = np.arange(0,1.01,0.01)
+  # print buckets
+  bucketsMap = {}
+  for index, val in enumerate(buckets):
+    bucketsMap[index] = val
+  peaks = sorted(bucketsMap.iteritems(), key=operator.itemgetter(1))[-10:]
+  print 'peaks', peaks
+
+  x = np.arange(minX,maxX+xstep,xstep)
   titleStr = '{} Distribution for {} Yelp users'.format(scoreType, numUsers)
   plt.title(titleStr)
   plt.xlabel(scoreType)
   plt.ylabel('Count of edges')
   plt.scatter(x, buckets)
   plt.plot(x, buckets)
-  plt.xlim(0,1)
-  plt.ylim(0, max(valsList)+10)
+  plt.xlim(minX,maxX)
+  plt.ylim(0, max(buckets)+10)
   # plt.axis([0,1,0, 350000])
   plt.show()
 

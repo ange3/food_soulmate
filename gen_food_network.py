@@ -21,18 +21,26 @@ def calculateAttrPref(node, restaurantSet, business_data):
     if business['business_id'] in restaurantSet:
       attributeMap = business['attributes']
       for attribute, val in attributeMap.items():
-        if type(val) == dict:
-          # iterate through the elements in this and pull out each attr/val
+        if type(val) == dict:  #for cases like parking: {garage: True, street: true}
+          # iterate through the elements in the attr dict and pull out each attr/val
+          for specificAttr in val:
+            valList = [val[specificAttr]]
+            attributePrefPos[specificAttr] += sum(valList) 
+            attributePrefNeg[specificAttr] += len(valList) - sum(valList)
+        elif type(val) == str:
+          attrStr = str(attribute)+'_'+val
+          attributePrefPos[attribute] += 1
+        elif type(val) == unicode:
           continue
-          # val = list(val.values())  #for cases like parking: {garage: True, street: true}, flattens into just a list of the values
-        if type(val) == str or type(val) == unicode:
-          continue
-        valList = [val]
-        if business['business_id'] in restaurantSet:
+        else:
+          valList = [val]
           attributePrefPos[attribute] += sum(valList)  #sum of a list of bools = number of True vals for this attribute  (True = 1)
           attributePrefNeg[attribute] += len(valList) - sum(valList)
           if attribute == "Price Range":
             numRestausWithPrice += 1
+      # store categories as attributes as well
+      for cat in business['categories']:
+        attributePrefPos[cat] += 1
 
   # normalize attribute importance scores to 0-1
   numRestau = len(restaurantSet)
@@ -120,7 +128,7 @@ def calculateRatingSim(node1, node2):
   restaurantSet2 = set(node2['restaurantMap'].keys()) # all restaurants reviewed by user 2
 
   if len(restaurantSet1) == 0 or len(restaurantSet2) == 0: # if either user has not reviewed any restaurants
-    print 'should not print'
+    print 'no restaurant overlap'
     return 0
 
   if len(set.intersection(restaurantSet1, restaurantSet2)) == 0: # no commonly reviewed restaurants
@@ -236,6 +244,7 @@ def createFoodNetworkEdgeLists(userMapFile, reviewJSONFile, thresholdJaccard, th
     userListMap[userID]['reviewMap'] = {} # create empty reviewMap for each user
   createMetaData(review_data, userListMap)
   print 'number of users', len(userListMap)
+  print userListMap
 
   # 2) calculate scores for each edge
   jaccardVals = createEdgeVals(userListMap, True, False, False)
@@ -260,15 +269,10 @@ def createFoodNetworkEdgeLists(userMapFile, reviewJSONFile, thresholdJaccard, th
 
   # 5) plot distribution frequency of each score type
   # IF IMPORT UTIL IS NOT WORKING FOR YOU, COMMENT OUT THESE LINES BELOW.
-  # util.plotBucketDistribution(jaccardVals, 'Jaccard Score', numUsers)
-  # util.plotBucketDistribution(attrVals, 'Attribute Compatibility', numUsers)
-  # minVal = min([val for key, val in ratiVals.items()])
-  # print 'MIN', minVal
-  # print type(minVal)
-  # print 'MAX', max([val for key, val in ratiVals.items()])
-  # ratiNormalizedVals = [(val+2.5)/5 for val in key,val in ratiVals.items()]
-  # util.plotBucketDistribution(ratiVals, 'Rating Score', numUsers)
+  # util.plotBucketDistribution(jaccardVals, 'Jaccard Score', numUsers, 0, 1)
+  # util.plotBucketDistribution(attrVals, 'Attribute Compatibility', numUsers, 0, 1)
+  # util.plotBucketDistribution(ratiVals, 'Rating Score', numUsers, -1, 1)
 
 
 # Sample script
-# createFoodNetworkEdgeLists("data/user_list_map_1000.p", '../yelp/reviews_by_1000_users.json', 0.04, 0.4, 0.9)
+# createFoodNetworkEdgeLists("data/user_list_map_2.p", '../yelp/reviews_by_2_users.json', 0.04, 0.4, 0.9, 2)

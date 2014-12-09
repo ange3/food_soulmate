@@ -38,9 +38,9 @@ def runTrial(evalIndices, clusterDict):
 
   # 2) Food Network
   # Create Food Network text files
-  thresholdJaccard = 0
-  thresholdRating = -1
-  thresholdAttr = 0
+  thresholdJaccard = 0.02
+  thresholdRating = 0.46
+  thresholdAttr = 0.75
   genFoodNet.createFoodNetworkEdgeLists(userMapFile, reviewJSONFile, thresholdJaccard, thresholdRating, thresholdAttr, NUM_USERS)
   # Load food networks
   jaccardNtwkFile = 'food_ntwk_random/jacc_edge_list_{}users_{}.txt'.format(NUM_USERS, thresholdJaccard)
@@ -112,6 +112,7 @@ def main():
   jaccardStats = {"JaccMean":np.mean(jaccardAccuracies), "JaccMedian":np.median(jaccardAccuracies), "JaccMin":np.amin(jaccardAccuracies), "Jacc25%":np.percentile(jaccardAccuracies,25), "Jacc75%":np.percentile(jaccardAccuracies,75), "JaccMax":np.amax(jaccardAccuracies), "JaccStdev":np.std(jaccardAccuracies), "JaccVar":np.var(jaccardAccuracies),}
   attrStats = {"AttrMean":np.mean(attrAccuracies), "AttrMedian":np.median(attrAccuracies), "AttrMin":np.amin(attrAccuracies), "Attr25%":np.percentile(attrAccuracies,25), "Attr75%":np.percentile(attrAccuracies,75), "AttrMax":np.amax(attrAccuracies),"AttrStdev":np.std(attrAccuracies), "AttrVar":np.var(attrAccuracies)}
   ratiStats = {"RatiMean":np.mean(ratiAccuracies), "RatiMedian":np.median(ratiAccuracies), "RatiMin":np.amin(ratiAccuracies), "Rati25%":np.percentile(ratiAccuracies,25), "Rati75%":np.percentile(ratiAccuracies,75), "RatiMax":np.amax(ratiAccuracies), "RatiStdev":np.std(ratiAccuracies), "RatiVar":np.var(ratiAccuracies)}
+
 
   file = open("output_data_threshold_0,00_0_0,0_potentialFriendship.txt", "w")
   json.dump(jaccardStats, file, sort_keys=True, indent=4)
