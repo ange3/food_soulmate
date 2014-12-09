@@ -57,6 +57,7 @@ def write_edges_file(user_data, user_map, edgesFile, edgesWithScoreFile):
   file2 = open(edgesWithScoreFile, "w")
 
   scoreMap = {}
+  count = 0
 
   for i in xrange(len(user_data)):
     friend_list.append(user_data[i]['friends'])
@@ -82,6 +83,8 @@ def write_edges_file(user_data, user_map, edgesFile, edgesWithScoreFile):
           lineWithScore = "{0} {1} {2}\n".format(src, dst, score) 
           file.write(line)
           file2.write(lineWithScore)
+          count += 1
+  print 'num edges', count
   file.close()
   file2.close()
 
@@ -99,6 +102,8 @@ def main():
 
   # step 1
   write_edges_file(user_data, user_map, edgesFile, edgesWithScoreFile)
+  print 'made edge file', edgesFile
+  print 'made edge with score file', edgesWithScoreFile
 
   # step 2
   g = snap.LoadEdgeList(snap.PUNGraph, edgesFile, 0, 1)
