@@ -50,7 +50,6 @@ def oneTimeInit():
 	globalBusinessMap = importJsonGBM()
 	print 'TEST: ',globalBusinessMap['NAoOOwQS_SQEPQe6-8zC-g']
 
-
 	print 'Generating Eval Network...'
 	for businessID in globalBusinessMap.keys():
 		numUsersInBusiness = len(globalBusinessMap[businessID])
@@ -64,12 +63,16 @@ def oneTimeInit():
 					print 'nope!'
 					continue
 				pair = frozenset([userID1, userID2])
-				ratingScore = gen_food_network.calculateRatingSim(userMap[userID1], userMap[userID2])
+				ratingScore = gen_food_network.calculateRatingSimForBusiness(userMap[userID1], userMap[userID2], businessID)
 				print 'ratingScore: ',ratingScore
 				if pair not in ratingsMap.keys():
 					ratingsMap[pair] = ratingScore
 				else:
 					ratingsMap[pair] += ratingScore
+
+	rati_map_file = open('ratingSimMap.json', 'w')
+	json.dump(ratingsMap, rati_map_file, indent=4)
+	rati_map_file.close()
 
 	edgesFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenixRatingScoreOnly.txt'
 	edgesWithScoreFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenixRatingScoreOnly_wScores.txt'

@@ -94,6 +94,10 @@ def createMetaData(review_data, userListMap):
       globalBusinessMap[businessID].append(userID)
       print 'user added!'
   
+  user_map_file = open('userMap.json', 'w')
+  json.dump(userListMap, user_map_file, indent=4)
+  user_map_file.close()
+
   business_map_file = open('globalBusinessMap.json', 'w')
   json.dump(globalBusinessMap, business_map_file, indent=4)
   business_map_file.close()
@@ -132,6 +136,30 @@ def getAttrCompScore(node1, node2):
   # print 'compVals', compVals
   return np.mean(compVals)
 
+def calculateRatingSimForBusiness(node1, node2, businessID):
+  reviewSetA = node1['restaurantMap'][businessID] # node1's reviews of common restaurant
+  reviewSetB = node2['restaurantMap'][businessID] # node2's reviews of common restaurant
+
+  latestDateA = latestDateB = datetime.datetime(2004, 1, 1)
+  ratingA = 0.0
+  ratingB = 0.0
+
+  for reviewID in reviewSetA: # find node1's most recent review for that restaurant
+    date = datetime.datetime.strptime(node1['reviewMap'][reviewID][1], '%Y-%m-%d')
+    if date > latestDateA: 
+      latestDateA = date
+      ratingA = node1['reviewMap'][reviewID][0]
+
+  for reviewID in reviewSetB: # find node2's most recent review for that restaurant
+    date = datetime.datetime.strptime(node2['reviewMap'][reviewID][1], '%Y-%m-%d')
+    if date > latestDateB: 
+      latestDateB = date
+      ratingB = node2['reviewMap'][reviewID][0]
+
+  # score for this commonly reviewed restaurant
+  score = (2.0 - abs(ratingA - ratingB)) * ( math.pow(abs(ratingA - 3.0), 2.0) + math.pow(abs(ratingB - 3.0), 2.0) ) / 2.0
+  return score
+
 # returns the similarity score between node1 and node2 based on the first part of our composite score formula (see Project Milestone)
 def calculateRatingSim(node1, node2):
   reviewScores = []
@@ -148,27 +176,7 @@ def calculateRatingSim(node1, node2):
   for restaurantA in restaurantSet1: # for each restaurant reviewed by node2
     for restaurantB in restaurantSet2: # for each restaurant reviewed by node2
       if restaurantA == restaurantB: # if the reviewed restaurant is the same
-        reviewSetA = node1['restaurantMap'][restaurantA] # node1's reviews of common restaurant
-        reviewSetB = node2['restaurantMap'][restaurantA] # node2's reviews of common restaurant
-        
-        latestDateA = latestDateB = datetime.datetime(2004, 1, 1)
-        ratingA = 0.0
-        ratingB = 0.0
-
-        for reviewID in reviewSetA: # find node1's most recent review for that restaurant
-          date = datetime.datetime.strptime(node1['reviewMap'][reviewID][1], '%Y-%m-%d')
-          if date > latestDateA: 
-            latestDateA = date
-            ratingA = node1['reviewMap'][reviewID][0]
-
-        for reviewID in reviewSetB: # find node2's most recent review for that restaurant
-          date = datetime.datetime.strptime(node2['reviewMap'][reviewID][1], '%Y-%m-%d')
-          if date > latestDateB: 
-            latestDateB = date
-            ratingB = node2['reviewMap'][reviewID][0]
-
-        # score for this commonly reviewed restaurant
-        score = (2.0 - abs(ratingA - ratingB)) * ( math.pow(abs(ratingA - 3.0), 2.0) + math.pow(abs(ratingB - 3.0), 2.0) ) / 2.0
+      	score = calculateRatingSimForBusiness(node1, node2, restaurantA)
         reviewScores.append(score)
   # print 'len: ',len(reviewScores)
   # print 'compatibility_score: ',sum(reviewScores) / len(reviewScores) / 8.0
