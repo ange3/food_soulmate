@@ -128,7 +128,7 @@ def calculateRatingSim(node1, node2):
   restaurantSet2 = set(node2['restaurantMap'].keys()) # all restaurants reviewed by user 2
 
   if len(restaurantSet1) == 0 or len(restaurantSet2) == 0: # if either user has not reviewed any restaurants
-    print 'should not print'
+    print 'no restaurant overlap'
     return 0
 
   if len(set.intersection(restaurantSet1, restaurantSet2)) == 0: # no commonly reviewed restaurants
@@ -275,4 +275,4 @@ def createFoodNetworkEdgeLists(userMapFile, reviewJSONFile, thresholdJaccard, th
 
 
 # Sample script
-createFoodNetworkEdgeLists("data/user_list_map_2.p", '../yelp/reviews_by_2_users.json', 0.04, 0.4, 0.9, 2)
+# createFoodNetworkEdgeLists("data/user_list_map_2.p", '../yelp/reviews_by_2_users.json', 0.04, 0.4, 0.9, 2)
