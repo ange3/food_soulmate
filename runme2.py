@@ -51,22 +51,30 @@ def oneTimeInit():
 	print 'TEST: ',globalBusinessMap['NAoOOwQS_SQEPQe6-8zC-g']
 
 	print 'Generating Eval Network...'
+	print 'len(globalBusinessMap)',len(globalBusinessMap)
+	counter = 0
+	numNewElem = 0
 	for businessID in globalBusinessMap.keys():
 		numUsersInBusiness = len(globalBusinessMap[businessID])
 		for userIDindex1 in xrange(numUsersInBusiness):
 			for userIDindex2 in xrange(userIDindex1 + 1, numUsersInBusiness):
 				userID1 = globalBusinessMap[businessID][userIDindex1]
 				userID2 = globalBusinessMap[businessID][userIDindex2]
-				print 'userID1: ',userID1
-				print 'userID2: ',userID2
+				# print 'userID1: ',userID1
+				# print 'userID2: ',userID2
 				if userID1 == userID2:
 					print 'nope!'
 					continue
 				pair = frozenset([userID1, userID2])
 				ratingScore = gen_food_network.calculateRatingSimForBusiness(userMap[userID1], userMap[userID2], businessID)
-				print 'ratingScore: ',ratingScore
+				counter += 1
+				if counter % 1000 == 0: 
+					print 'calculation #: ',counter,' ratingScore for this calc: ',ratingScore
 				if pair not in ratingsMap.keys():
 					ratingsMap[pair] = ratingScore
+					numNewElem += 1
+					if numNewElem % 1000 == 0:
+						numNewElem,' newElem!'
 				else:
 					ratingsMap[pair] += ratingScore
 
