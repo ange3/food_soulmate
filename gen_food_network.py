@@ -59,7 +59,7 @@ def calculateAttrPref(node, restaurantSet, business_data):
     attributePrefNeg[attr] = score
 
   node['attributePosPrefCounter'] = attributePrefPos
-  print "Positive: %s" % attributePrefPos
+  # print "Positive: %s" % attributePrefPos
   node['attributeNegPrefCounter'] = attributePrefNeg
   if numRestausWithPrice != 0:
     node['avgPriceRange'] = attributePrefPos['Price Range']/float(numRestausWithPrice)
@@ -122,8 +122,8 @@ def calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB):
 
 # return average of comp score for all attributes
 def getAttrCompScore(node1, node2):
-  attributePrefA = node1['attributePosPrefCounter']
-  attributePrefB = node2['attributePosPrefCounter']
+  attributePrefA = Counter(node1['attributePosPrefCounter'])
+  attributePrefB = Counter(node2['attributePosPrefCounter'])
   # allAttributes = attributePrefA.most_common(3) + attributePrefB.most_common(3) # only picking the top 3 most important attributes for A and B and calculating score based on that
   allAttributes = attributePrefA.most_common(len(attributePrefA)) + attributePrefB.most_common(len(attributePrefB))  #picks ALL attributes
   compVals = []
