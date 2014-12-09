@@ -31,6 +31,10 @@ def oneTimeInit():
 	ratingEdgeList = []
 	ratingsMap = {}
 
+	#
+	# don't need the below commented out code because we have some JSON files!
+	#
+
 	# review_data = util.loadJSON('../yelp/review.json')
 	# userMapFile = "data/user_list_map_phoenix_atLeastOneReview.p"
 	# userMap = pickle.load( open( userMapFile, "rb" ) )
@@ -46,26 +50,48 @@ def oneTimeInit():
 	globalBusinessMap = importJsonGBM()
 	print 'TEST: ',globalBusinessMap['NAoOOwQS_SQEPQe6-8zC-g']
 
-
 	print 'Generating Eval Network...'
+	print 'len(globalBusinessMap)',len(globalBusinessMap)
+	counter = 0
+	numNewElem = 0
 	for businessID in globalBusinessMap.keys():
-		for userID1 in globalBusinessMap[businessID]:
-			for userID2 in globalBusinessMap[businessID]:
+		numUsersInBusiness = len(globalBusinessMap[businessID])
+		for userIDindex1 in xrange(numUsersInBusiness):
+			for userIDindex2 in xrange(userIDindex1 + 1, numUsersInBusiness):
+				userID1 = globalBusinessMap[businessID][userIDindex1]
+				userID2 = globalBusinessMap[businessID][userIDindex2]
+				# print 'userID1: ',userID1
+				# print 'userID2: ',userID2
 				if userID1 == userID2:
+					print 'nope!'
 					continue
-				ratingScore = gen_food_network.calculateRatingSim(userMap[userID1], userMap[userID2])
 				pair = frozenset([userID1, userID2])
+				ratingScore = gen_food_network.calculateRatingSimForBusiness(userMap[userID1], userMap[userID2], businessID)
+				counter += 1
+				if counter % 1000 == 0: 
+					print 'calculation #: ',counter,' ratingScore for this calc: ',ratingScore
 				if pair not in ratingsMap.keys():
 					ratingsMap[pair] = ratingScore
-				ratingsMap[pair] += ratingScore
+					numNewElem += 1
+					if numNewElem % 1000 == 0:
+						numNewElem,' newElem!'
+				else:
+					ratingsMap[pair] += ratingScore
+
+	rati_map_file = open('ratingSimMap.json', 'w')
+	json.dump(ratingsMap, rati_map_file, indent=4)
+	rati_map_file.close()
 
 	edgesFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenixRatingScoreOnly.txt'
 	edgesWithScoreFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenixRatingScoreOnly_wScores.txt'
 	file = open(edgesFile, "w")
 	file2 = open(edgesWithScoreFile, "w")
 
+	print 'Writing the Edge List...'
 	for pair in ratingsMap:
 		key1, key2 = pair
+		print 'pair: ',pair
+		print 'value: ',ratingsMap[pair]
 		if ratingsMap[pair] > 0.0: 
 			line = "{0} {1}\n".format(userMap[key1]['node_id'], userMap[key2]['node_id']) 
 			lineWithScore = "{0} {1} {2}\n".format(userMap[key1]['node_id'], userMap[key2]['node_id'], ratingsMap[pair])
@@ -74,24 +100,6 @@ def oneTimeInit():
 			newEdge = userMap[key1]['node_id'], userMap[key2]['node_id']
 			print 'newEdge: ',newEdge
 			ratingEdgeList.append(newEdge)
-
-	# for key1 in userMap.keys(): # iterates over all the node IDs that can be in the network ~70k
-	# 	for key2 in userMap.keys():
-	# 		if key1 == key2: 
-	# 			continue
-			
-	# 		ratingScore = gen_food_network.calculateRatingSim(userMap[key1], userMap[key2]) 
-
-	# 		if ratingScore > 0.0: 
-	# 			line = "{0} {1}\n".format(userMap[key1]['node_id'], userMap[key2]['node_id']) 
-	# 			lineWithScore = "{0} {1} {2}\n".format(userMap[key1]['node_id'], userMap[key2]['node_id'], ratingScore) 
-	# 			file.write(line)
-	# 			file2.write(lineWithScore)
-	# 			newEdge = userMap[key1]['node_id'], userMap[key2]['node_id']
-	# 			print 'newEdge: ',newEdge
-	# 			ratingEdgeList.append(newEdge)
-	# 		else:
-	# 			print 'no edge created here...'
 	
 	file.close()
 	file2.close()
