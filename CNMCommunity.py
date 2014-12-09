@@ -26,6 +26,22 @@ def jaccard(cmty1, cmty2, nodelist):
 	# print ratio
 	return ratio
 
+def friendshipPotential(foodCmty, evalCmty):
+	foodSet = set(foodCmty)
+	evalSet = set(evalCmty)
+	correctSet = set.intersection(foodSet, evalSet)
+	ratio = float(len(correctSet))/len(foodSet)
+	return ratio
+
+def pareto(foodCmty, evalCmty, nodelist):
+	evalSet = set(evalCmty)
+	foodSet = set(foodCmty)
+	nodelistSet = set(nodelist)
+	accuracy = friendshipPotential(foodCmty, evalCmty)
+	boldness = len(foodSet)/len(set.intersection(evalSet, nodelistSet))
+	pareto = accuracy * boldness
+	return pareto
+
 def generateIndices(foodCmtyV, evalCmtyV):
 	nodeIndices = {x: [-1, -1] for x in range(NUMNODES)}
 
@@ -133,9 +149,17 @@ def calculateAccuracy(foodCmtyV, foodIndices, evalClusterDict, evalIndices, node
 
 		evalCmtyToPass = evalClusterDict[evalIndices[i]]
 		#print "NID: %d, Cluster index: %d," % (i, evalIndices[i])
-		currJaccard = jaccard(foodCmtyToPass, evalCmtyToPass, nodelist)
+		#currJaccard = jaccard(foodCmtyToPass, evalCmtyToPass, nodelist)
 		#print "Curr %f" % currJaccard
-		runningJScore += currJaccard
+		#runningJScore += currJaccard
+
+		#currPotential = friendshipPotential(foodCmtyToPass, evalCmtyToPass)
+		#runningJScore += currPotential
+
+		currPareto = pareto(foodCmtyToPass, evalCmtyToPass, nodelist)
+		runningJScore += currPareto
+
+
 
 	jaccardAverage = float(runningJScore)/len(nodelist)
 	print "Accuracy: %f" % jaccardAverage

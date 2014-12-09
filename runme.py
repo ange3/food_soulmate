@@ -39,7 +39,7 @@ def runTrial(evalIndices, clusterDict):
   # 2) Food Network
   # Create Food Network text files
   thresholdJaccard = 0
-  thresholdRating = 0
+  thresholdRating = -1
   thresholdAttr = 0
   genFoodNet.createFoodNetworkEdgeLists(userMapFile, reviewJSONFile, thresholdJaccard, thresholdRating, thresholdAttr, NUM_USERS)
   # Load food networks
@@ -104,7 +104,7 @@ def main():
   # Computes a dictionary of Cluster Number:NIDs on the entire eval network
   clusterDict = genEvalClst.createClusterDict(evalIndices)
 
-  for i in xrange(100):
+  for i in xrange(10):
     runTrial(evalIndices, clusterDict)
 
   output = {"Jaccard":jaccardAccuracies, "Attribute":attrAccuracies, "Rating":ratiAccuracies}
@@ -113,7 +113,7 @@ def main():
   attrStats = {"AttrMean":np.mean(attrAccuracies), "AttrMedian":np.median(attrAccuracies), "AttrMin":np.amin(attrAccuracies), "Attr25%":np.percentile(attrAccuracies,25), "Attr75%":np.percentile(attrAccuracies,75), "AttrMax":np.amax(attrAccuracies),"AttrStdev":np.std(attrAccuracies), "AttrVar":np.var(attrAccuracies)}
   ratiStats = {"RatiMean":np.mean(ratiAccuracies), "RatiMedian":np.median(ratiAccuracies), "RatiMin":np.amin(ratiAccuracies), "Rati25%":np.percentile(ratiAccuracies,25), "Rati75%":np.percentile(ratiAccuracies,75), "RatiMax":np.amax(ratiAccuracies), "RatiStdev":np.std(ratiAccuracies), "RatiVar":np.var(ratiAccuracies)}
 
-  file = open("output_data.txt", "w")
+  file = open("output_data_threshold_0,00_0_0,0_potentialFriendship.txt", "w")
   json.dump(jaccardStats, file, sort_keys=True, indent=4)
   file.write("\n")
   json.dump(attrStats, file, sort_keys=True, indent=4)
