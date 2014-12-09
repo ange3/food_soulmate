@@ -53,15 +53,18 @@ def oneTimeInit():
 
 	print 'Generating Eval Network...'
 	for businessID in globalBusinessMap.keys():
-		for userID1 in globalBusinessMap[businessID]:
-			for userID2 in globalBusinessMap[businessID]:
+		numUsersInBusiness = len(globalBusinessMap[businessID])
+		for userIDindex1 in xrange(numUsersInBusiness):
+			for userIDindex2 in xrange(userIDindex1, numUsersInBusiness):
+				userID1 = globalBusinessMap[businessID][userIDindex1]
+				userID2 = globalBusinessMap[businessID][userIDindex2]
 				if userID1 == userID2:
 					continue
-				ratingScore = gen_food_network.calculateRatingSim(userMap[userID1], userMap[userID2])
 				pair = frozenset([userID1, userID2])
+				ratingScore = gen_food_network.calculateRatingSim(userMap[userID1], userMap[userID2])
 				if pair not in ratingsMap.keys():
 					ratingsMap[pair] = ratingScore
-				else: 
+				else:
 					ratingsMap[pair] += ratingScore
 
 	edgesFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenixRatingScoreOnly.txt'
