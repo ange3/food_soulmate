@@ -55,13 +55,17 @@ def oneTimeInit():
 	for businessID in globalBusinessMap.keys():
 		numUsersInBusiness = len(globalBusinessMap[businessID])
 		for userIDindex1 in xrange(numUsersInBusiness):
-			for userIDindex2 in xrange(userIDindex1, numUsersInBusiness):
+			for userIDindex2 in xrange(userIDindex1 + 1, numUsersInBusiness):
 				userID1 = globalBusinessMap[businessID][userIDindex1]
 				userID2 = globalBusinessMap[businessID][userIDindex2]
+				print 'userID1: ',userID1
+				print 'userID2: ',userID2
 				if userID1 == userID2:
+					print 'nope!'
 					continue
 				pair = frozenset([userID1, userID2])
 				ratingScore = gen_food_network.calculateRatingSim(userMap[userID1], userMap[userID2])
+				print 'ratingScore: ',ratingScore
 				if pair not in ratingsMap.keys():
 					ratingsMap[pair] = ratingScore
 				else:
