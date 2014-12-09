@@ -135,6 +135,8 @@ def getAttrCompScore(node1, node2):
       compVals.append(comp)
     # otherwise the comp will def be 0, in which case no need to add to the average
   # print 'compVals', compVals
+  if len(compVals) == 0 or sum(compVals) == 0:
+    return 0
   return np.mean(compVals)
 
 def calculateRatingSimForBusiness(node1, node2, businessID):
