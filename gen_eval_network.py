@@ -89,8 +89,8 @@ def write_edges_file(user_data, user_map, edgesFile, edgesWithScoreFile):
   file2.close()
 
 def main(): 
-  edgesFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenix.txt'
-  edgesWithScoreFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenix_with_score.txt'
+  edgesFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenix2.txt'
+  edgesWithScoreFile = 'eval_ntwk_food_friends/eval_ntwk_edge_list_phoenix_with_score2.txt'
   userMapFile = 'data/user_list_map.p'
   user_data = []
   user_data = load_data('../yelp/user_allgood.json', user_data)
@@ -126,5 +126,3 @@ def genEvalNetwork(numUsers):
 
 if __name__ == '__main__':
   main()
-
-main()

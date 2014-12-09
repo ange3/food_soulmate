@@ -1,0 +1,18 @@
+Evaluation Network Info:
+  Nodes:                    9522
+  Edges:                    37873
+  Zero Deg Nodes:           0
+  Zero InDeg Nodes:         0
+  Zero OutDeg Nodes:        0
+  NonZero In-Out Deg Nodes: 9522
+  Unique directed edges:    75746
+  Unique undirected edges:  37873
+  Self Edges:               0
+  BiDir Edges:              75746
+  Closed triangles:         167723
+  Open triangles:           5379990
+  Frac. of closed triads:   0.030233
+  Connected component size: 0.846146
+  Strong conn. comp. size:  0.846146
+  Approx. full diameter:    10
+  90% effective diameter:  4.439134
