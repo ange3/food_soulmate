@@ -94,14 +94,6 @@ def createMetaData(review_data, userListMap):
     elif userID not in globalBusinessMap[businessID]:
       globalBusinessMap[businessID].append(userID)
       #print 'user added!'
-  
-  user_map_file = open('userMap.json', 'w')
-  json.dump(userListMap, user_map_file, indent=4)
-  user_map_file.close()
-
-  business_map_file = open('globalBusinessMap.json', 'w')
-  json.dump(globalBusinessMap, business_map_file, indent=4)
-  business_map_file.close()
 
   business_data = util.loadJSON('../yelp/restaurants.JSON')
   for user_id, user in userListMap.items():
@@ -109,6 +101,14 @@ def createMetaData(review_data, userListMap):
     restaurantSet = set(user['restaurantMap'].keys())
     # print restaurantSet
     calculateAttrPref(user, restaurantSet, business_data)
+
+  user_map_file = open('userMap.json', 'w')
+  json.dump(userListMap, user_map_file, indent=4)
+  user_map_file.close()
+
+  business_map_file = open('globalBusinessMap.json', 'w')
+  json.dump(globalBusinessMap, business_map_file, indent=4)
+  business_map_file.close()
 
 # returns the ratio of size of overlapping restaurants set / union of all restaurants
 def calculateJaccardSim(node1, node2, restaurantSetA, restaurantSetB):
